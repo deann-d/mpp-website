@@ -273,6 +273,7 @@ tr:hover td{background:#fafbfe}
 
 <div class="copied-toast" id="toast">Disalin ke clipboard!</div>
 
+<script src="assets/dashboard-render.js"></script>
 <script>
 /* ============================================================
    DASHBOARD MITRA — MODE DEMO
@@ -430,13 +431,7 @@ async function renderDashboard(p){
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:26px">Belum ada transaksi referral tercatat. Yuk mulai bagikan link referralmu! </td></tr>';
   }
   d.transactions.forEach(function(t){
-    var tr = document.createElement('tr');
-    var badge = t.status === 'Terverifikasi' ? 'verified' : t.status === 'Menunggu Verifikasi' ? 'pending' : 'proses';
-    var komisi = t.status === 'Terverifikasi' ? rp(t.nilai * 0.07) : '—';
-    tr.innerHTML = '<td>'+t.tanggal+'</td><td>'+t.nama+'</td><td>'+t.program+'</td>'+
-      '<td><span class="badge '+badge+'">'+t.status+'</span></td>'+
-      '<td>'+(t.nilai?rp(t.nilai):'—')+'</td><td style="font-weight:700;color:'+(t.status==='Terverifikasi'?'var(--green)':'var(--muted)')+'">'+komisi+'</td>';
-    tbody.appendChild(tr);
+    tbody.appendChild(MppDashboardRender.buildTransactionRow(t, rp));
   });
 }
 
