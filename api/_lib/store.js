@@ -80,51 +80,69 @@ async function registerPartner(b, meta) {
   await ensureSeeded();
   const email = String(b.email).trim().toLowerCase();
 
-  // anti duplikat email
-  const dup = await cmd('GET', 'mpp:email:' + email);
-  if (dup) return { status: 409, body: { ok: false, error: 'Email sudah terdaftar sebagai mitra' } };
+  // Klaim email lebih dulu agar hanya satu permintaan paralel yang mendapat kode.
+  const emailKey = 'mpp:email:' + email;
+  const claim = await cmd('SET', emailKey, '__CLAIMING__', 'NX');
+  if (!claim) return { status: 409, body: { ok: false, error: 'Email sudah terdaftar sebagai mitra' } };
 
   // alokasi kode resmi FIFO
-  const code = await cmd('LPOP', POOL_KEY);
-  if (!code) return { status: 503, body: { ok: false, error: 'Pool kode referral habis — hubungi tim MPP' } };
-
-  const now = new Date().toISOString();
-  const fields = {
-    nama: String(b.nama).trim(), email, whatsapp: String(b.whatsapp).trim(),
-    kota: b.kota || '', status: b.status, institusi: b.institusi,
-    jurusan: b.jurusan || '', semester: b.semester || '',
-    akun_sosmed: b.akun_sosmed || '', sosmed: b.sosmed || '', motivasi: b.motivasi || '',
-    metode_bayar: b.metode_bayar || '', nama_rekening: b.nama_rekening || '', no_rekening: protectAccount(b.no_rekening),
-    tier: 'starter', lifecycle: 'menunggu_verifikasi',
-    ip_pendaftar: meta.ip || '', user_agent: (meta.ua || '').slice(0, 300),
-    created_at: now
-  };
-  const pin = newPin(), pinSalt = crypto.randomBytes(8).toString('hex');
-  fields.pin_salt = pinSalt; fields.pin_hash = pinHash(pin, pinSalt);
-  const flat = [];
-  for (const [k, v] of Object.entries(fields)) flat.push(k, String(v));
-
-  await pipeline([
-    ['HSET', 'mpp:partner:' + code, ...flat],
-    ['SET', 'mpp:email:' + email, code],
-    ['SADD', 'mpp:partners', code]
-  ]);
-
-  return {
-    status: 201,
-    body: {
-      ok: true,
-      message: 'Pendaftaran diterima. Tim MPP akan menghubungi via WhatsApp/Email maksimal 1x24 jam kerja.',
-      ref_code: code,
-      access_pin: pin,
-      next_steps: [
-        'Cek WhatsApp/Email untuk undangan onboarding produk (±1-2 jam)',
-        'Selesaikan onboarding & kuis pemahaman produk',
-        'Kode referral diaktifkan + terima kit marketing',
-        'Mulai promosi dan pantau di Dashboard Mitra'
-      ]
+  let code;
+  try {
+    code = await cmd('LPOP', POOL_KEY);
+    if (!code) {
+      await cmd('DEL', emailKey);
+      return { status: 503, body: { ok: false, error: 'Pool kode referral habis — hubungi tim MPP' } };
     }
-  };
+
+    const now = new Date().toISOString();
+    const fields = {
+      nama: String(b.nama).trim(), email, whatsapp: String(b.whatsapp).trim(),
+      kota: b.kota || '', status: b.status, institusi: b.institusi,
+      jurusan: b.jurusan || '', semester: b.semester || '',
+      akun_sosmed: b.akun_sosmed || '', sosmed: b.sosmed || '', motivasi: b.motivasi || '',
+      metode_bayar: b.metode_bayar || '', nama_rekening: b.nama_rekening || '', no_rekening: protectAccount(b.no_rekening),
+      tier: 'starter', lifecycle: 'menunggu_verifikasi',
+      ip_pendaftar: meta.ip || '', user_agent: (meta.ua || '').slice(0, 300),
+      created_at: now
+    };
+    const pin = newPin(), pinSalt = crypto.randomBytes(8).toString('hex');
+    fields.pin_salt = pinSalt; fields.pin_hash = pinHash(pin, pinSalt);
+    const flat = [];
+    for (const [k, v] of Object.entries(fields)) flat.push(k, String(v));
+
+    const partnerKey = 'mpp:partner:' + code;
+    const saved = await pipeline([
+      ['HSET', partnerKey, ...flat],
+      ['SADD', 'mpp:partners', code],
+      ['SET', emailKey, code]
+    ]);
+    const saveError = saved.find(result => result && typeof result === 'object' && result.error);
+    if (saveError) throw new Error('Penyimpanan data mitra gagal: ' + saveError.error);
+
+    return {
+      status: 201,
+      body: {
+        ok: true,
+        message: 'Pendaftaran diterima. Tim MPP akan menghubungi via WhatsApp/Email maksimal 1x24 jam kerja.',
+        ref_code: code,
+        access_pin: pin,
+        next_steps: [
+          'Cek WhatsApp/Email untuk undangan onboarding produk (±1-2 jam)',
+          'Selesaikan onboarding & kuis pemahaman produk',
+          'Kode referral diaktifkan + terima kit marketing',
+          'Mulai promosi dan pantau di Dashboard Mitra'
+        ]
+      }
+    };
+  } catch (error) {
+    try { await cmd('DEL', emailKey); } catch (_) {}
+    if (code) {
+      try { await cmd('DEL', 'mpp:partner:' + code); } catch (_) {}
+      try { await cmd('SREM', 'mpp:partners', code); } catch (_) {}
+      try { await cmd('LPUSH', POOL_KEY, code); } catch (_) {}
+    }
+    throw error;
+  }
 }
 
 /* ---------- lookup mitra ---------- */

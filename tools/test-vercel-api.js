@@ -10,6 +10,7 @@ const store = { kv:{}, lists:{}, sets:{} };
 function exec(a){const[c,...x]=a.map(String);switch(c){
  case 'GET':return store.kv[x[0]]!==undefined?store.kv[x[0]]:null;
  case 'SET':if(x.includes('NX')){if(store.kv[x[0]]!==undefined)return null;store.kv[x[0]]=x[1];return 'OK';}store.kv[x[0]]=x[1];return 'OK';
+ case 'DEL':{let n=0;for(const k of x){if(store.kv[k]!==undefined){delete store.kv[k];n++;}}return n;}
  case 'EXPIRE':return 1;
  case 'INCR':store.kv[x[0]]=String(parseInt(store.kv[x[0]]||'0',10)+1);return +store.kv[x[0]];
  case 'RPUSH':store.lists[x[0]]=store.lists[x[0]]||[];store.lists[x[0]].push(...x.slice(1));return store.lists[x[0]].length;
@@ -18,6 +19,7 @@ function exec(a){const[c,...x]=a.map(String);switch(c){
  case 'LLEN':return (store.lists[x[0]]||[]).length;
  case 'LTRIM':{const l=store.lists[x[0]]||[];store.lists[x[0]]=l.slice(+x[1],+x[2]+1);return 'OK';}
  case 'SADD':store.sets[x[0]]=store.sets[x[0]]||new Set();let n=0;x.slice(1).forEach(v=>{if(!store.sets[x[0]].has(v)){store.sets[x[0]].add(v);n++;}});return n;
+ case 'SREM':{const s=store.sets[x[0]];let n=0;if(s)x.slice(1).forEach(v=>{if(s.delete(v))n++;});return n;}
  case 'SMEMBERS':return [...(store.sets[x[0]]||[])];
  case 'HSET':store.kv[x[0]]=store.kv[x[0]]||{};for(let i=1;i<x.length;i+=2)store.kv[x[0]][x[i]]=x[i+1];return (x.length-1)/2;
  case 'HGETALL':return store.kv[x[0]]||{};
@@ -60,6 +62,33 @@ mock.listen(0, async ()=>{
 
   r=await call(reg,{method:'POST',body:payload});
   ck('POST /api/register email duplikat → 409', r.statusCode===409);
+
+  const poolBeforeWarmup=store.lists['mpp:pool'].length;
+  const warmup=await call(reg,{method:'POST',body:{...payload,nama:'Pemanas Pool',email:'pemanas.pool@example.com'}});
+  ck('pendaftaran pemanas mengisi pool', warmup.statusCode===201 && store.lists['mpp:pool'].length===poolBeforeWarmup-1);
+  const parallelEmail='paralel.unik@example.com';
+  const poolBeforeParallel=store.lists['mpp:pool'].length;
+  const parallelResults=await Promise.all(Array.from({length:20},(_,i)=>call(reg,{
+    method:'POST',body:{...payload,nama:'Paralel '+i,email:parallelEmail}
+  })));
+  const parallel201=parallelResults.filter(result=>result.statusCode===201);
+  const parallel409=parallelResults.filter(result=>result.statusCode===409);
+  ck('20 pendaftaran paralel email sama: tepat 1 respons 201 dan 19 respons 409',
+    parallel201.length===1 && parallel409.length===19 && parallelResults.every(result=>result.statusCode===201 || result.statusCode===409),
+    parallelResults.map(result=>result.statusCode).join(','));
+  ck('respons 409 tidak memuat ref_code', parallel409.every(result=>!Object.prototype.hasOwnProperty.call(result._b,'ref_code')));
+  ck('race email memakai tepat satu kode pool', poolBeforeParallel-store.lists['mpp:pool'].length===1,
+    'sebelum='+poolBeforeParallel+', sesudah='+store.lists['mpp:pool'].length);
+
+  const rollbackEmail='rollback.pool@example.com';
+  store.lists['mpp:pool']=[];
+  const noCode=await call(reg,{method:'POST',body:{...payload,nama:'Rollback',email:rollbackEmail}});
+  ck('pool kosong mengembalikan 503 dan melepas klaim email',
+    noCode.statusCode===503 && store.kv['mpp:email:'+rollbackEmail]===undefined,
+    JSON.stringify(noCode._b));
+  store.lists['mpp:pool'].push('KSA-ROLLBACK-MPP');
+  const retry=await call(reg,{method:'POST',body:{...payload,nama:'Rollback Berhasil',email:rollbackEmail}});
+  ck('email dapat didaftarkan setelah klaim rollback', retry.statusCode===201);
   r=await call(reg,{method:'GET'});
   ck('GET /api/register → 405', r.statusCode===405);
   r=await call(reg,{method:'POST',body:{...payload,email:'baru@example.com',setuju_etika:false}});
@@ -90,8 +119,8 @@ mock.listen(0, async ()=>{
   r=await call(adm,{headers:{}});
   ck('GET /api/admin/stats tanpa token → 401', r.statusCode===401);
   r=await call(adm,{headers:{authorization:'Bearer rahasia123'}});
-  ck('GET /api/admin/stats + token → 200, 1 mitra, 199 kode sisa',
-     r.statusCode===200 && r._b.total_mitra===1 && r._b.kode_tersedia===199, JSON.stringify(r._b));
+  ck('GET /api/admin/stats + token → 200 dan jumlah mitra konsisten',
+     r.statusCode===200 && r._b.total_mitra===parallel201.length+3, JSON.stringify(r._b));
 
   // CORS preflight
   r=await call(reg,{method:'OPTIONS'});

@@ -54,6 +54,34 @@ function check(name, cond, extra = '') {
   });
   check('POST /api/register duplikat → 409', dup.status === 409);
 
+  const statsBeforeWarmup = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
+  const warmupEmail = 'warmup+' + Date.now() + '@example.com';
+  const warmup = await req('POST', '/api/register', {
+    nama: 'Pemanas Pool', email: warmupEmail, whatsapp: '081234567890',
+    status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
+    setuju_etika: true, setuju_data: true, setuju_status: true
+  }, { 'X-Forwarded-For': '192.0.2.10' });
+  const statsBeforeParallel = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
+  check('pendaftaran pemanas server berhasil', warmup.status === 201);
+
+  const parallelEmail = 'parallel+' + Date.now() + '@example.com';
+  const parallelResults = await Promise.all(Array.from({ length: 20 }, (_, i) => req('POST', '/api/register', {
+    nama: 'Paralel ' + i, email: parallelEmail, whatsapp: '081234567890',
+    status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
+    setuju_etika: true, setuju_data: true, setuju_status: true
+  }, { 'X-Forwarded-For': '198.51.100.' + (i + 1) })));
+  const parallel201 = parallelResults.filter(result => result.status === 201);
+  const parallel409 = parallelResults.filter(result => result.status === 409);
+  const statsAfterParallel = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
+  check('20 pendaftaran paralel server: tepat 1 respons 201 dan 19 respons 409',
+    warmup.status === 201 && parallel201.length === 1 && parallel409.length === 19 &&
+    parallelResults.every(result => result.status === 201 || result.status === 409),
+    parallelResults.map(result => result.status).join(','));
+  check('pendaftaran paralel server memakai tepat satu kode',
+    statsBeforeWarmup.status === 200 && statsBeforeParallel.status === 200 && statsAfterParallel.status === 200 &&
+    statsBeforeWarmup.json.kode_tersedia - statsBeforeParallel.json.kode_tersedia === 1 &&
+    statsBeforeParallel.json.kode_tersedia - statsAfterParallel.json.kode_tersedia === 1);
+
   // 5. Register tanpa persetujuan ditolak
   const noAgree = await req('POST', '/api/register', {
     nama: 'X', email: 'x' + Date.now() + '@e.com', whatsapp: '081234567890',
@@ -83,9 +111,10 @@ function check(name, cond, extra = '') {
 
   // 7. Track klik + first-click attribution
   if (code) {
-    const t1 = await req('POST', '/api/track', { ref_code: code, prospect: 'prospek1@example.com' });
+    const testProspect = 'prospek-' + Date.now() + '@example.com';
+    const t1 = await req('POST', '/api/track', { ref_code: code, prospect: testProspect });
     check('POST /api/track → 201 first_click', t1.status === 201 && t1.json.first_click === true);
-    const t2 = await req('POST', '/api/track', { ref_code: 'KSA-DEMO-MPP', prospect: 'prospek1@example.com' });
+    const t2 = await req('POST', '/api/track', { ref_code: 'KSA-DEMO-MPP', prospect: testProspect });
     check('POST /api/track prospek sama → tetap milik mitra pertama',
       t2.status === 200 && t2.json.first_click === false && t2.json.attributed_to === code);
     const p2 = await req('GET', '/api/partner/' + code, null, PH);
