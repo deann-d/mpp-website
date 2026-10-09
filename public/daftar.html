@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendaftaran Mitra — Marketing Partner Program Kesatria Academy</title>
+<meta name="description" content="Daftar jadi Marketing Partner Kesatria Academy. Gratis, verifikasi cepat, aktif kurang dari 3 hari.">
+<style>
+:root{
+  --navy:#0a1a33; --navy2:#10264d; --navy3:#16305e;
+  --gold:#f0b429; --gold2:#ffd166; --gold-soft:rgba(240,180,41,.12);
+  --ink:#1c2733; --muted:#5a6b80; --bg:#f6f8fc; --card:#ffffff; --line:#e3e9f2;
+  --green:#1f9d6b; --red:#d64545;
+  --radius:16px; --shadow:0 10px 30px rgba(10,26,51,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+a{text-decoration:none;color:inherit}
+.container{width:min(1120px,92%);margin-inline:auto}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.95rem;padding:14px 28px;border-radius:12px;border:2px solid transparent;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#e09f0e);color:#231a02;box-shadow:0 8px 20px rgba(240,180,41,.35)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy3)}
+.btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn-sm{padding:9px 18px;font-size:.85rem;border-radius:10px}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:rgba(10,26,51,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800}
+.brand .logo{width:38px;height:38px;flex:none}
+.brand small{display:block;font-weight:500;font-size:.68rem;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase}
+.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links a{color:#c6d2e4;font-size:.9rem;font-weight:600;transition:.2s}
+.nav-links a:hover{color:var(--gold2)}
+.nav-cta{display:flex;gap:10px;align-items:center}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px}
+.hamburger span{display:block;width:24px;height:2.5px;background:#fff;margin:5px 0;border-radius:2px}
+
+/* Hero mini */
+.page-hero{background:
+  radial-gradient(700px 300px at 80% -20%,rgba(240,180,41,.18),transparent 60%),
+  linear-gradient(160deg,var(--navy),var(--navy2) 60%,var(--navy3));
+  color:#fff;padding:56px 0;text-align:center}
+.page-hero h1{font-size:clamp(1.6rem,3.4vw,2.4rem);margin-bottom:10px}
+.page-hero p{color:#c6d2e4;max-width:640px;margin-inline:auto;font-size:.95rem}
+.breadcrumb{font-size:.8rem;color:#8fa1bb;margin-bottom:14px}
+.breadcrumb a{color:var(--gold2)}
+
+/* Layout */
+.form-layout{display:grid;grid-template-columns:1.5fr .9fr;gap:28px;align-items:start;padding:56px 0 80px}
+.form-card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:36px}
+.form-card h2{color:var(--navy);font-size:1.25rem;margin-bottom:6px}
+.form-card>p.sub{color:var(--muted);font-size:.88rem;margin-bottom:26px}
+
+/* Progress */
+.progress-bar{height:8px;background:var(--line);border-radius:999px;margin-bottom:30px;overflow:hidden}
+.progress-bar div{height:100%;width:33.3%;background:linear-gradient(90deg,var(--gold),#e09f0e);border-radius:999px;transition:width .35s ease}
+.step-label{font-size:.78rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+
+fieldset{border:none;margin-bottom:8px}
+fieldset legend{font-weight:700;color:var(--navy);font-size:1rem;margin-bottom:16px}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f-group{margin-bottom:18px}
+.f-group label{display:block;font-size:.84rem;font-weight:700;color:var(--navy);margin-bottom:7px}
+.f-group label .req{color:var(--red)}
+.f-group input,.f-group select,.f-group textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;font-family:inherit;background:#fbfcfe;color:var(--ink);transition:.2s}
+.f-group input:focus,.f-group select:focus,.f-group textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,180,41,.18);background:#fff}
+.f-group textarea{resize:vertical;min-height:90px}
+.f-group .err{display:none;font-size:.76rem;color:var(--red);margin-top:5px;font-weight:600}
+.f-group.invalid input,.f-group.invalid select,.f-group.invalid textarea{border-color:var(--red)}
+.f-group.invalid .err{display:block}
+.f-hint{font-size:.76rem;color:var(--muted);margin-top:5px}
+
+/* Checkbox medsos */
+.social-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.social-opt{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--navy);background:#fbfcfe;transition:.15s}
+.social-opt:hover{border-color:var(--gold)}
+.social-opt input{accent-color:var(--gold);width:17px;height:17px;cursor:pointer}
+.social-opt.checked{border-color:var(--gold);background:var(--gold-soft)}
+
+/* Persetujuan */
+.agree-box{display:flex;gap:12px;align-items:flex-start;background:#fbfcfe;border:1.5px solid var(--line);border-radius:12px;padding:16px;margin:8px 0 22px;font-size:.84rem;color:var(--muted)}
+.agree-box input{accent-color:var(--gold);width:18px;height:18px;margin-top:2px;flex:none;cursor:pointer}
+.agree-box a{color:var(--navy);font-weight:700;text-decoration:underline}
+.agree-box.invalid{border-color:var(--red)}
+
+/* Nav tombol step */
+.form-nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px}
+.step-pane{display:none}
+.step-pane.active{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Sidebar */
+.side-card{background:linear-gradient(160deg,var(--navy),var(--navy3));color:#fff;border-radius:20px;padding:30px;box-shadow:0 20px 40px rgba(10,26,51,.25);margin-bottom:22px}
+.side-card h3{font-size:1.05rem;margin-bottom:18px;color:var(--gold2)}
+.side-list{list-style:none}
+.side-list li{display:flex;gap:12px;padding:9px 0;font-size:.86rem;color:#dbe4f2;border-bottom:1px dashed rgba(255,255,255,.12)}
+.side-list li:last-child{border-bottom:none}
+.side-list .n{flex:none;width:26px;height:26px;border-radius:50%;background:rgba(240,180,41,.18);color:var(--gold2);font-weight:800;font-size:.78rem;display:flex;align-items:center;justify-content:center}
+.info-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow)}
+.info-card h3{color:var(--navy);font-size:.98rem;margin-bottom:12px}
+.info-card p{font-size:.84rem;color:var(--muted);margin-bottom:10px}
+.info-card .chip{display:inline-block;background:var(--gold-soft);color:#8a6a08;font-size:.74rem;font-weight:700;padding:5px 12px;border-radius:999px;margin:3px 4px 3px 0}
+
+/* Success */
+.success-pane{display:none;text-align:center;padding:20px 0}
+.success-pane.active{display:block;animation:fadeUp .5s ease}
+.success-icon{width:88px;height:88px;margin:0 auto 20px;border-radius:50%;background:rgba(31,157,107,.12);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:2.4rem}
+.success-pane h2{color:var(--navy);font-size:1.5rem;margin-bottom:8px}
+.success-pane>p{color:var(--muted);font-size:.92rem;max-width:480px;margin:0 auto 26px}
+.code-box{background:var(--navy);border-radius:14px;padding:22px;max-width:440px;margin:0 auto 14px}
+.code-box span{font-size:.72rem;color:var(--gold2);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+.code-box b{display:block;font-size:1.45rem;color:#fff;letter-spacing:.06em;margin-top:6px;font-family:Consolas,Menlo,monospace}
+.link-box{display:flex;gap:10px;max-width:520px;margin:0 auto 26px}
+.link-box input{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:.82rem;font-family:Consolas,Menlo,monospace;background:#fbfcfe;color:var(--ink)}
+.next-steps{max-width:520px;margin:0 auto 26px;text-align:left;background:#fbfcfe;border:1.5px dashed var(--line);border-radius:14px;padding:20px 24px}
+.next-steps h4{color:var(--navy);font-size:.9rem;margin-bottom:10px}
+.next-steps ol{margin-left:18px;font-size:.84rem;color:var(--muted)}
+.next-steps li{padding:3px 0}
+.copied-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:12px 24px;border-radius:12px;font-size:.86rem;font-weight:700;box-shadow:0 10px 30px rgba(10,26,51,.35);transition:.3s;opacity:0;z-index:99}
+.copied-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Footer */
+footer{background:var(--navy);color:#aebcd2;padding:30px 0;text-align:center;font-size:.8rem}
+footer a{color:var(--gold2)}
+
+@media (max-width:960px){.form-layout{grid-template-columns:1fr}}
+@media (max-width:640px){
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy);flex-direction:column;padding:18px;gap:14px}
+  .nav-links.open{display:flex}
+  .hamburger{display:block}
+  .f-row,.social-grid{grid-template-columns:1fr}
+  .form-card{padding:24px}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="index.html" class="brand">
+      <img class="logo-img" src="https://kesatria.wiratek.id/public/image/logo_baru.png" alt="Kesatria Academy" height="34"><span class="brand-sub">Marketing Partner Program</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html#cara-kerja">Cara Kerja</a>
+      <a href="index.html#komisi">Skema Komisi</a>
+      <a href="index.html#faq">FAQ</a>
+      <a href="dashboard.html">Dashboard Mitra</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="index.html" class="btn btn-ghost btn-sm">Beranda</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">Beranda</a> / Pendaftaran Mitra</div>
+    <h1>Formulir Pendaftaran Marketing Partner</h1>
+    <p>Lengkapi data di bawah prosesnya hanya 3 menit. Setelah verifikasi, kamu akan diundang ke sesi onboarding produk (1–2 jam) dan langsung menerima kode referral pribadi.</p>
+  </div>
+</section>
+
+<div class="container form-layout">
+
+  <!-- ====== FORM ====== -->
+  <div class="form-card">
+    <h2>Data Pendaftaran Mitra</h2>
+    <p class="sub">Bertanda <span style="color:var(--red)">*</span> wajib diisi. Data kamu hanya digunakan untuk keperluan program MPP.</p>
+
+    <div class="progress-bar"><div id="progressFill"></div></div>
+
+    <form id="mppForm" novalidate>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
+
+      <!-- STEP 1 : Data Diri -->
+      <div class="step-pane active" data-step="1">
+        <div class="step-label">Langkah 1 dari 3 — Data Diri</div>
+        <fieldset>
+          <div class="f-row">
+            <div class="f-group" data-validate="required">
+              <label>Nama Lengkap <span class="req">*</span></label>
+              <input type="text" name="nama" placeholder="cth: budi" autocomplete="name">
+              <div class="err">Nama lengkap wajib diisi.</div>
+            </div>
+            <div class="f-group" data-validate="email">
+              <label>Email Aktif <span class="req">*</span></label>
+              <input type="email" name="email" placeholder="nama@email.com" autocomplete="email">
+              <div class="err">Format email tidak valid.</div>
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="f-group" data-validate="wa">
+              <label>No. WhatsApp <span class="req">*</span></label>
+              <input type="tel" name="whatsapp" placeholder="cth: 081234567890" autocomplete="tel">
+              <div class="err">Masukkan nomor WhatsApp valid (10–15 digit).</div>
+            </div>
+            <div class="f-group" data-validate="required">
+              <label>Kota Domisili <span class="req">*</span></label>
+              <input type="text" name="kota" placeholder="cth: Bandung">
+              <div class="err">Kota domisili wajib diisi.</div>
+            </div>
+          </div>
+          <div class="f-group" data-validate="required">
+            <label>Status Saat Ini <span class="req">*</span></label>
+            <select name="status">
+              <option value="">— Pilih status —</option>
+              <option>Mahasiswa Aktif</option>
+              <option>Fresh Graduate (&lt; 1 tahun)</option>
+              <option>Freelancer</option>
+              <option>Lainnya</option>
+            </select>
+            <div class="err">Pilih salah satu status.</div>
+          </div>
+        </fieldset>
+        <div class="form-nav">
+          <span></span>
+          <button type="button" class="btn btn-gold next-step">Lanjut ke Data Akademik</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 : Akademik & Medsos -->
+      <div class="step-pane" data-step="2">
+        <div class="step-label">Langkah 2 dari 3 — Institusi &amp; Media Sosial</div>
+        <fieldset>
+          <div class="f-row">
+            <div class="f-group" data-validate="required">
+              <label>Nama Kampus / Institusi <span class="req">*</span></label>
+              <input type="text" name="institusi" placeholder="(isi 'N/A' jika fresh graduate)">
+              <div class="err">Institusi wajib diisi (boleh N/A).</div>
+            </div>
+            <div class="f-group">
+              <label>Jurusan / Program Studi</label>
+              <input type="text" name="jurusan" placeholder="cth: Sistem Informasi">
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="f-group">
+              <label>Semester / Tahun Lulus</label>
+              <input type="text" name="semester" placeholder="cth: Semester 5 atau Lulus 2025">
+            </div>
+            <div class="f-group">
+              <label>Akun Instagram / TikTok / LinkedIn</label>
+              <input type="text" name="akun_sosmed" placeholder="cth: @username">
+              <div class="f-hint">Minimal satu akun media sosial yang aktif.</div>
+            </div>
+          </div>
+          <div class="f-group" data-validate="social">
+            <label>Platform Media Sosial yang Aktif Digunakan <span class="req">*</span> <span style="font-weight:500;color:var(--muted)">(pilih minimal 1)</span></label>
+            <div class="social-grid" id="socialGrid">
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="Instagram"> Instagram</label>
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="TikTok"> TikTok</label>
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="LinkedIn"> LinkedIn</label>
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="WhatsApp"> WhatsApp</label>
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="X/Twitter"> X / Twitter</label>
+              <label class="social-opt"><input type="checkbox" name="sosmed" value="YouTube"> YouTube</label>
+            </div>
+            <div class="err">Pilih minimal satu platform media sosial.</div>
+          </div>
+          <div class="f-group">
+            <label>Motivasi Bergabung (opsional)</label>
+            <textarea name="motivasi" placeholder="Ceritakan singkat kenapa kamu tertarik jadi Marketing Partner..."></textarea>
+          </div>
+        </fieldset>
+        <div class="form-nav">
+          <button type="button" class="btn btn-navy prev-step">Kembali</button>
+          <button type="button" class="btn btn-gold next-step">Lanjut ke Persetujuan</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 : Persetujuan -->
+      <div class="step-pane" data-step="3">
+        <div class="step-label">Langkah 3 dari 3 — Data Rekening &amp; Persetujuan</div>
+        <fieldset>
+          <div class="f-row">
+            <div class="f-group">
+              <label>Metode Pencairan Komisi <span class="req">*</span></label>
+              <select name="metode_bayar" id="metodeBayar">
+                <option value="">— Pilih metode —</option>
+                <option value="bank">Transfer Bank</option>
+                <option value="ewallet">E-Wallet (GoPay/OVO/DANA/ShopeePay)</option>
+              </select>
+            </div>
+            <div class="f-group">
+              <label>Nama Pemilik Rekening / Akun</label>
+              <input type="text" name="nama_rekening" placeholder="Sesuai buku tabungan / akun e-wallet">
+            </div>
+          </div>
+          <div class="f-group">
+            <label>Nomor Rekening / Akun E-Wallet</label>
+            <input type="text" name="no_rekening" placeholder="Diisi sekarang atau menyusul via tim MPP">
+            <div class="f-hint">Data pembayaran dijaga kerahasiaannya dan hanya digunakan untuk pencairan komisi.</div>
+          </div>
+          <div class="agree-box" id="agreeEtika">
+            <input type="checkbox" id="chkEtika">
+            <label for="chkEtika">Saya telah membaca dan bersedia mematuhi <a href="index.html#etika" target="_blank">Kode Etik Pemasaran Mitra</a>: tidak menyebarkan informasi menyesatkan, tidak melakukan spam, mematuhi harga/promo resmi, dan transparan sebagai mitra resmi. <span class="req">*</span></label>
+          </div>
+          <div class="agree-box" id="agreeData">
+            <input type="checkbox" id="chkData">
+            <label for="chkData">Saya menyetujui data saya diproses oleh tim MPP Kesatria Academy untuk keperluan verifikasi, onboarding, dan operasional program, serta bersedia dihubungi melalui WhatsApp/Email. <span class="req">*</span></label>
+          </div>
+          <div class="agree-box" id="agreeFreelance">
+            <input type="checkbox" id="chkFreelance">
+            <label for="chkFreelance">Saya memahami bahwa status kemitraan ini adalah <b>kemitraan lepas (freelance partner)</b>, bukan hubungan kerja formal/karyawan tetap, tanpa target minimum wajib. <span class="req">*</span></label>
+          </div>
+        </fieldset>
+        <div class="form-nav">
+          <button type="button" class="btn btn-navy prev-step">Kembali</button>
+          <button type="submit" class="btn btn-gold" id="submitBtn">Kirim Pendaftaran </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- SUCCESS -->
+    <div class="success-pane" id="successPane">
+      <h2>Pendaftaran Berhasil Dikirim!</h2>
+      <p>Terima kasih telah mendaftar sebagai calon Marketing Partner. Tim MPP akan memverifikasi datamu dan menghubungi via WhatsApp/Email <b>maksimal 1×24 jam kerja</b>.</p>
+      <div class="code-box">
+        <span>Kode Referral Calon Mitra Kamu</span>
+        <b id="resultCode">KSA-000000-MPP</b>
+      </div>
+      <div class="code-box"><span>PIN akses dashboard. Simpan sekarang, hanya ditampilkan sekali.</span><b id="resultPin">-</b></div>
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:22px">Kode akan <b>diaktifkan</b> setelah kamu menyelesaikan onboarding produk.</p>
+      <div class="link-box">
+        <input type="text" id="refLink" readonly>
+        <button class="btn btn-navy btn-sm" id="copyLink" type="button">Salin</button>
+      </div>
+      <div class="next-steps">
+        <h4>Langkah Selanjutnya:</h4>
+        <ol>
+          <li>Cek WhatsApp/Email untuk undangan <b>onboarding produk (±1–2 jam)</b> — tersedia format live atau rekaman.</li>
+          <li>Selesaikan onboarding &amp; kuis singkat pemahaman produk.</li>
+          <li>Terima akses <b>kit marketing</b> dan grup komunitas mitra.</li>
+          <li>Mulai promosikan dan pantau performamu di <b>Dashboard Mitra</b>.</li>
+        </ol>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="dashboard.html" class="btn btn-gold">Buka Dashboard Mitra </a>
+        <a href="index.html" class="btn btn-navy">Kembali ke Beranda</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside>
+    <div class="side-card">
+      <h3>Apa yang Terjadi Setelah Mendaftar?</h3>
+      <ul class="side-list">
+        <li><span class="n">1</span> Verifikasi data oleh tim MPP (±1×24 jam kerja)</li>
+        <li><span class="n">2</span> Undangan sesi onboarding produk 1–2 jam (live/on-demand)</li>
+        <li><span class="n">3</span> Aktivasi kode referral + akses kit marketing</li>
+        <li><span class="n">4</span> Gabung grup komunitas mitra resmi</li>
+        <li><span class="n">5</span> Mulai promosi — komisi cair tiap bulan</li>
+      </ul>
+      <p style="margin-top:18px;font-size:.8rem;color:var(--gold2);font-weight:700">Total waktu aktivasi: kurang dari 3 hari kerja</p>
+    </div>
+    <div class="info-card">
+      <h3>Syarat Menjadi Mitra</h3>
+      <span class="chip">Mahasiswa aktif (semua jurusan)</span>
+      <span class="chip">Fresh graduate</span>
+      <span class="chip">Freelancer muda</span>
+      <span class="chip">Aktif di ≥1 medsos</span>
+      <span class="chip">Punya HP/laptop</span>
+      <span class="chip">Tanpa pengalaman marketing</span>
+      <p style="margin-top:14px">Tidak diwajibkan memiliki latar belakang IT, sales, maupun pengalaman marketing sebelumnya. Yang penting: motivasi belajar dan komunikasi dasar yang baik.</p>
+    </div>
+    <div class="info-card" style="margin-top:22px">
+      <h3>Butuh Bantuan?</h3>
+      <p>Tim Customer Relation Officer siap membantu pertanyaan seputar pendaftaran:</p>
+      <p style="font-weight:700;color:var(--navy)">kesatriaacademy@gmail.com<br><a href="https://wa.me/62895618452602">WhatsApp Tim MPP</a></p>
+    </div>
+  </aside>
+</div>
+
+<div class="copied-toast" id="toast">Link referral disalin!</div>
+
+<footer>
+  <div class="container">
+    © 2026 PT. Wiratek Solusi Asia — Kesatria Academy • <a href="index.html">Beranda</a> • <a href="index.html#etika">Kode Etik</a> • <a href="index.html#faq">FAQ</a>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   KONFIGURASI BACKEND FORMULIR — urutan percobaan otomatis:
+     1. API bawaan     -> POST /api/register (server Node di server/index.js).
+                          Kode referral dialokasikan dari POOL RESMI 200 kode
+                          Lampiran S dokumen proposal.
+     2. FORM_ENDPOINT  -> isi dengan URL Formspree / Google Apps Script /
+                          Supabase Edge Function (lihat api/README.md).
+     3. MODE DEMO      -> data disimpan di localStorage, kode dibuat lokal.
+                          Cocok untuk presentasi/uji coba sebelum backend siap.
+   ============================================================ */
+var FORM_ENDPOINT = "";  /* cth: "https://formspree.io/f/XXXXXXX" */
+var API_REGISTER   = "/api/register";
+
+var BASE_URL = location.origin + location.pathname.replace(/[^/]*$/, '');
+
+/* ===== Mobile menu ===== */
+document.getElementById('hamburger').addEventListener('click',function(){
+  document.getElementById('navLinks').classList.toggle('open');
+});
+
+/* ===== Multi-step wizard ===== */
+var currentStep = 1, totalSteps = 3;
+var fill = document.getElementById('progressFill');
+
+function showStep(n){
+  currentStep = n;
+  document.querySelectorAll('.step-pane').forEach(function(p){
+    p.classList.toggle('active', parseInt(p.dataset.step,10) === n);
+  });
+  fill.style.width = (n/totalSteps*100) + '%';
+  window.scrollTo({top: 220, behavior:'smooth'});
+}
+
+function validateStep(n){
+  var pane = document.querySelector('.step-pane[data-step="'+n+'"]');
+  var ok = true;
+  pane.querySelectorAll('[data-validate]').forEach(function(g){
+    var type = g.dataset.validate, valid = true;
+    if(type === 'required'){
+      var inp = g.querySelector('input,select,textarea');
+      valid = inp.value.trim() !== '';
+    } else if(type === 'email'){
+      valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g.querySelector('input').value.trim());
+    } else if(type === 'wa'){
+      var v = g.querySelector('input').value.replace(/[^0-9]/g,'');
+      valid = v.length >= 10 && v.length <= 15;
+    } else if(type === 'social'){
+      valid = g.querySelectorAll('input:checked').length >= 1;
+    }
+    g.classList.toggle('invalid', !valid);
+    if(!valid) ok = false;
+  });
+  if(n === 3){
+    var mb = document.getElementById('metodeBayar');
+    var mbOk = mb.value !== '';
+    mb.closest('.f-group').classList.toggle('invalid', !mbOk);
+    if(!mbOk) ok = false;
+    ['agreeEtika','agreeData','agreeFreelance'].forEach(function(id){
+      var box = document.getElementById(id);
+      var chk = box.querySelector('input');
+      box.classList.toggle('invalid', !chk.checked);
+      if(!chk.checked) ok = false;
+    });
+  }
+  return ok;
+}
+
+document.querySelectorAll('.next-step').forEach(function(b){
+  b.addEventListener('click', function(){ if(validateStep(currentStep)) showStep(currentStep+1); });
+});
+document.querySelectorAll('.prev-step').forEach(function(b){
+  b.addEventListener('click', function(){ showStep(currentStep-1); });
+});
+
+/* ===== Visual checkbox medsos ===== */
+document.querySelectorAll('#socialGrid .social-opt input').forEach(function(cb){
+  cb.addEventListener('change', function(){ cb.closest('.social-opt').classList.toggle('checked', cb.checked); });
+});
+
+/* ===== Referral code =====
+   Format sesuai Lampiran S dokumen: KSA-######-MPP.
+   Kode RESMI dialokasikan server dari pool 200 kode dokumen.
+   generateRefCode() hanya dipakai sebagai fallback mode demo
+   ketika tidak ada backend yang tersedia. */
+function generateRefCode(){
+  var n = Math.floor(100000 + Math.random()*900000);
+  return 'KSA-' + n + '-MPP';
+}
+
+function collectFormData(form){
+  var fd = new FormData(form);
+  return {
+    nama: fd.get('nama'), email: fd.get('email'), whatsapp: fd.get('whatsapp'),
+    kota: fd.get('kota'), status: fd.get('status'), institusi: fd.get('institusi'),
+    jurusan: fd.get('jurusan'), semester: fd.get('semester'),
+    akun_sosmed: fd.get('akun_sosmed'), sosmed: fd.getAll('sosmed').join(', '),
+    motivasi: fd.get('motivasi'), metode_bayar: fd.get('metode_bayar'),
+    nama_rekening: fd.get('nama_rekening'), no_rekening: fd.get('no_rekening'),
+    website: fd.get('website') || '',
+    setuju_etika: true, setuju_data: true, setuju_status: true,
+    submitted_at: new Date().toISOString(),
+    source: 'website-mpp'
+  };
+}
+
+var IS_LOCAL = location.protocol === 'file:' || ['localhost','127.0.0.1'].indexOf(location.hostname) > -1;
+function showFormError(msg){
+  var nav = document.getElementById('submitBtn').parentNode;
+  var el = document.getElementById('formError');
+  if(!el){ el = document.createElement('p'); el.id = 'formError'; el.className = 'form-error'; el.setAttribute('role','alert'); nav.insertBefore(el, nav.firstChild); }
+  el.textContent = 'Pendaftaran belum terkirim: ' + msg + ' Data kamu belum tersimpan, silakan coba lagi.';
+}
+async function postJson(url, payload){
+  var res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  var body = null;
+  try{ body = await res.json(); }catch(e){}
+  if(!res.ok) throw new Error((body && body.error) || ('HTTP ' + res.status));
+  return body || {ok:true};
+}
+
+/* ===== Submit ===== */
+document.getElementById('mppForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(!validateStep(3)){ return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Mengirim...';
+
+  var data = collectFormData(e.target);
+  var result = null, mode = 'api';
+
+  /* 1) Coba API bawaan (server/index.js) */
+  try{
+    result = await postJson(API_REGISTER, data);
+  }catch(errApi){
+    /* 2) Coba endpoint eksternal (Formspree / Apps Script / Supabase) */
+    if(FORM_ENDPOINT){
+      mode = 'endpoint';
+      data.ref_code = generateRefCode();
+      try{
+        result = await postJson(FORM_ENDPOINT, data);
+      }catch(errExt){
+        result = null;
+      }
+    }
+    /* 3) Mode demo hanya untuk file lokal; di server asli tampilkan error */
+    if(!result && !IS_LOCAL){
+      showFormError(errApi.message || 'server tidak merespons.');
+      btn.disabled = false; btn.textContent = 'Kirim Pendaftaran';
+      return;
+    }
+    if(!result){
+      mode = 'demo';
+      data.ref_code = generateRefCode();
+      var list = JSON.parse(localStorage.getItem('mpp_partners') || '[]');
+      list.push(data);
+      localStorage.setItem('mpp_partners', JSON.stringify(list));
+      console.warn('[MPP] Backend tidak tersedia — pendaftaran disimpan lokal (mode demo).', errApi.message);
+      result = {ok:true};
+    }
+  }
+
+  /* Kode resmi dari server menang atas fallback lokal */
+  if(result && result.ref_code) data.ref_code = result.ref_code;
+  if(result && result.access_pin){ data.access_pin = result.access_pin; sessionStorage.setItem('mpp_pin', result.access_pin); }
+  if(!data.ref_code) data.ref_code = generateRefCode();
+  data.mode = mode;
+
+  if(mode === 'demo'){
+    var list2 = JSON.parse(localStorage.getItem('mpp_partners') || '[]');
+    var idx = list2.map(function(x){return x.email}).lastIndexOf(data.email);
+    if(idx > -1){ list2[idx].ref_code = data.ref_code; localStorage.setItem('mpp_partners', JSON.stringify(list2)); }
+  }
+  showSuccess(data);
+});
+
+function showSuccess(data){
+  document.getElementById('mppForm').style.display = 'none';
+  document.querySelector('.progress-bar').style.display = 'none';
+  document.querySelector('.form-card h2').style.display = 'none';
+  document.querySelector('.form-card p.sub').style.display = 'none';
+  document.getElementById('resultCode').textContent = data.ref_code;
+  document.getElementById('resultPin').textContent = data.access_pin || '-';
+  document.getElementById('refLink').value = BASE_URL + 'index.html?ref=' + data.ref_code;
+  document.getElementById('successPane').classList.add('active');
+  /* simpan sesi untuk auto-login dashboard */
+  var session = {
+    code: data.ref_code, name: data.nama, email: data.email,
+    status: data.status, institusi: data.institusi, createdAt: data.submitted_at
+  };
+  localStorage.setItem('mpp_session', JSON.stringify(session));
+  localStorage.setItem('mpp_current', JSON.stringify(session));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ===== Copy link ===== */
+document.getElementById('copyLink').addEventListener('click', function(){
+  var inp = document.getElementById('refLink');
+  inp.select(); inp.setSelectionRange(0, 99999);
+  try{
+    if(navigator.clipboard){ navigator.clipboard.writeText(inp.value); }
+    else { document.execCommand('copy'); }
+    var t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }catch(err){}
+});
+
+showStep(1);
+</script>
+</body>
+</html>

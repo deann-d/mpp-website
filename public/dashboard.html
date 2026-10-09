@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mitra — Marketing Partner Program Kesatria Academy</title>
+<meta name="description" content="Dashboard tracking referral real-time untuk mitra Marketing Partner Program Kesatria Academy.">
+<style>
+:root{
+  --navy:#0a1a33; --navy2:#10264d; --navy3:#16305e;
+  --gold:#f0b429; --gold2:#ffd166; --gold-soft:rgba(240,180,41,.12);
+  --ink:#1c2733; --muted:#5a6b80; --bg:#f6f8fc; --card:#ffffff; --line:#e3e9f2;
+  --green:#1f9d6b; --red:#d64545; --blue:#2f6fd0;
+  --radius:16px; --shadow:0 10px 30px rgba(10,26,51,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+a{text-decoration:none;color:inherit}
+.container{width:min(1200px,94%);margin-inline:auto}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.92rem;padding:12px 24px;border-radius:12px;border:2px solid transparent;cursor:pointer;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#e09f0e);color:#231a02;box-shadow:0 8px 20px rgba(240,180,41,.35)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy3)}
+.btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn-outline{border-color:var(--line);background:#fff;color:var(--navy)}
+.btn-outline:hover{border-color:var(--gold)}
+.btn-sm{padding:8px 16px;font-size:.82rem;border-radius:10px}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:rgba(10,26,51,.94);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:13px 0}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800}
+.brand .logo{width:36px;height:36px;flex:none}
+.brand small{display:block;font-weight:500;font-size:.66rem;color:var(--gold2);letter-spacing:.08em;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:14px}
+.user-chip{display:none;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);padding:7px 14px;border-radius:999px;color:#fff;font-size:.82rem;font-weight:600}
+.user-chip .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#e09f0e);color:#231a02;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem}
+.user-chip.show{display:flex}
+#logoutBtn{display:none}
+#logoutBtn.show{display:inline-flex}
+
+/* ===== Login screen ===== */
+.login-wrap{min-height:calc(100vh - 66px);display:flex;align-items:center;justify-content:center;padding:40px 16px;
+  background:
+  radial-gradient(800px 400px at 80% -10%,rgba(240,180,41,.15),transparent 60%),
+  radial-gradient(600px 400px at 0% 110%,rgba(35,86,166,.3),transparent 60%),
+  linear-gradient(160deg,var(--navy),var(--navy2) 55%,var(--navy3))}
+.login-card{width:min(440px,100%);background:#fff;border-radius:22px;padding:40px 36px;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.login-card .ic{width:60px;height:60px;margin:0 auto 18px;border-radius:16px;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:1.8rem}
+.login-card h1{text-align:center;color:var(--navy);font-size:1.35rem;margin-bottom:6px}
+.login-card>p{text-align:center;color:var(--muted);font-size:.86rem;margin-bottom:26px}
+.f-group{margin-bottom:16px}
+.f-group label{display:block;font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:7px}
+.f-group input{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:10px;font-size:.95rem;font-family:Consolas,Menlo,monospace;letter-spacing:.05em;background:#fbfcfe}
+.f-group input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,180,41,.18);background:#fff}
+.login-err{display:none;background:rgba(214,69,69,.1);border:1px solid rgba(214,69,69,.35);color:var(--red);font-size:.8rem;font-weight:600;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.login-err.show{display:block}
+.login-alt{margin-top:22px;text-align:center;font-size:.8rem;color:var(--muted)}
+.login-alt a{color:var(--blue);font-weight:700}
+.demo-hint{margin-top:18px;background:#fbfcfe;border:1.5px dashed var(--line);border-radius:10px;padding:12px 14px;font-size:.76rem;color:var(--muted);text-align:center}
+.demo-hint b{color:var(--navy);font-family:Consolas,Menlo,monospace}
+
+/* ===== Dashboard ===== */
+.dash{display:none;padding:34px 0 70px}
+.dash.show{display:block}
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.dash-head h1{color:var(--navy);font-size:1.5rem}
+.dash-head p{color:var(--muted);font-size:.88rem}
+.tier-pill{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:var(--gold2);font-size:.8rem;font-weight:800;padding:8px 18px;border-radius:999px}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--gold)}
+.stat .lbl{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .val{font-size:1.8rem;font-weight:800;color:var(--navy);margin-top:6px}
+.stat .sub{font-size:.76rem;color:var(--muted);margin-top:2px}
+.stat .delta{font-size:.74rem;font-weight:700;color:var(--green)}
+
+/* Panels */
+.dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;margin-bottom:22px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.panel h3{color:var(--navy);font-size:1rem;margin-bottom:4px}
+.panel .psub{font-size:.78rem;color:var(--muted);margin-bottom:20px}
+
+/* Bar chart */
+.chart{display:flex;align-items:flex-end;gap:14px;height:190px;padding-top:10px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bar-stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:3px}
+.bar{border-radius:6px 6px 0 0;min-height:3px;transition:height .6s ease}
+.bar.click{background:#c9d6ea}
+.bar.konsul{background:var(--blue)}
+.bar.close{background:linear-gradient(180deg,var(--gold),#e09f0e)}
+.bar-col span{font-size:.7rem;color:var(--muted);font-weight:600}
+.legend{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.legend span{font-size:.76rem;color:var(--muted);font-weight:600}
+
+/* Referral link panel */
+.ref-link{display:flex;gap:10px;margin-bottom:16px}
+.ref-link input{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-family:Consolas,Menlo,monospace;font-size:.8rem;background:#fbfcfe;color:var(--ink)}
+.code-display{background:var(--navy);border-radius:12px;padding:16px 18px;text-align:center;margin-bottom:16px}
+.code-display span{font-size:.68rem;color:var(--gold2);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+.code-display b{display:block;color:#fff;font-size:1.2rem;font-family:Consolas,Menlo,monospace;letter-spacing:.06em;margin-top:4px}
+
+/* Tier progress */
+.tier-track{margin-top:6px}
+.tier-row{display:flex;justify-content:space-between;font-size:.8rem;font-weight:700;margin-bottom:8px}
+.tier-row .now{color:var(--gold)}
+.tier-row .next{color:var(--muted)}
+.tbar{height:12px;background:var(--line);border-radius:999px;overflow:hidden;position:relative}
+.tbar div{height:100%;background:linear-gradient(90deg,var(--gold),#e09f0e);border-radius:999px;transition:width .8s ease}
+.tier-note{font-size:.76rem;color:var(--muted);margin-top:10px}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{background:#f2f5fa;color:var(--navy);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;padding:11px 14px;text-align:left;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--ink);white-space:nowrap}
+tr:hover td{background:#fafbfe}
+.badge{display:inline-block;font-size:.7rem;font-weight:800;padding:4px 12px;border-radius:999px}
+.badge.verified{background:rgba(31,157,107,.12);color:var(--green)}
+.badge.pending{background:rgba(240,180,41,.15);color:#8a6a08}
+.badge.proses{background:rgba(47,111,208,.1);color:var(--blue)}
+
+/* Kit grid */
+.kit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kit-card{border:1.5px solid var(--line);border-radius:12px;padding:16px;text-align:center;background:#fbfcfe;transition:.2s}
+.kit-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.kit-card .ic{font-size:1.6rem;margin-bottom:8px}
+.kit-card b{display:block;font-size:.82rem;color:var(--navy)}
+.kit-card span{font-size:.72rem;color:var(--muted)}
+.kit-card button{margin-top:10px}
+
+/* Toast */
+.copied-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:12px 24px;border-radius:12px;font-size:.86rem;font-weight:700;box-shadow:0 10px 30px rgba(10,26,51,.35);transition:.3s;opacity:0;z-index:99}
+.copied-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* payout info */
+.payout{display:flex;gap:14px;align-items:center;background:var(--gold-soft);border:1px solid rgba(240,180,41,.4);border-radius:12px;padding:14px 18px;font-size:.82rem;color:#6d5407;margin-top:18px}
+.payout b{color:#4d3a05}
+
+@media (max-width:1000px){.stats{grid-template-columns:1fr 1fr}.dash-grid{grid-template-columns:1fr}.kit-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.stats{grid-template-columns:1fr}.kit-grid{grid-template-columns:1fr}.nav-right .btn-ghost{display:none}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="index.html" class="brand">
+      <img class="logo-img" src="https://kesatria.wiratek.id/public/image/logo_baru.png" alt="Kesatria Academy" height="34"><span class="brand-sub">Dashboard Mitra MPP</span>
+    </a>
+    <div class="nav-right">
+      <div class="user-chip" id="userChip"><span class="avatar" id="userAvatar">M</span><span id="userName">Mitra</span></div>
+      <a href="index.html" class="btn btn-ghost btn-sm">Beranda</a>
+      <button class="btn btn-gold btn-sm" id="logoutBtn">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== LOGIN ===== -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Login Dashboard Mitra</h1>
+    <p>Masukkan kode referral pribadimu untuk melihat performa pemasaran, tracking referral, dan komisi secara real-time.</p>
+    <div class="login-err" id="loginErr">Kode referral tidak ditemukan. Periksa kembali atau hubungi tim MPP.</div>
+    <div class="f-group">
+      <label for="codeInput">Kode Referral</label>
+      <input type="text" id="codeInput" placeholder="KSA-000000-MPP" autocomplete="off">
+    </div>
+    <div class="f-group">
+      <label for="pinInput">PIN akses</label>
+      <input type="password" id="pinInput" autocomplete="off" placeholder="8 karakter dari halaman pendaftaran">
+    </div>
+    <button class="btn btn-gold" id="loginBtn" style="width:100%">Masuk ke Dashboard </button>
+    <div class="demo-hint">
+      <b>Mode Demo:</b> gunakan kode <b>KSA-DEMO-MPP</b>. Mitra terdaftar masuk dengan kode dan PIN dari halaman <a href="daftar.html" style="color:var(--blue);font-weight:700">Pendaftaran Mitra</a>.
+    </div>
+    <div class="login-alt">Belum punya kode referral? <a href="daftar.html">Daftar jadi mitra sekarang →</a></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dash container" id="dashWrap">
+
+  <div class="dash-head">
+    <div>
+      <h1>Halo, <span id="dashName">Mitra</span>! </h1>
+      <p>Berikut performa pemasaranmu. <span id="dataSource" style="font-size:.78rem;font-weight:700;color:var(--muted)"></span></p>
+    </div>
+    <span class="tier-pill" id="dashTier">Partner Starter</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="lbl">Klik Link Referral</div><div class="val" id="stClicks">0</div><div class="sub"><span class="delta">▲ +38</span> vs bulan lalu</div></div>
+    <div class="stat"><div class="lbl">Sesi Konsultasi</div><div class="val" id="stKonsul">0</div><div class="sub"><span class="delta">▲ +9</span> vs bulan lalu</div></div>
+    <div class="stat"><div class="lbl">Closing Terverifikasi</div><div class="val" id="stClosing">0</div><div class="sub">Periode berjalan (bulan ini)</div></div>
+    <div class="stat"><div class="lbl">Komisi Bulan Ini</div><div class="val" id="stKomisi">Rp0</div><div class="sub">Estimasi sebelum pencairan</div></div>
+  </div>
+
+  <div class="dash-grid">
+    <!-- Chart -->
+    <div class="panel">
+      <h3>Tren Performa Referral</h3>
+      <div class="psub">6 bulan terakhir — klik, konsultasi, dan closing per bulan</div>
+      <div class="chart" id="chart"></div>
+      <div class="legend">
+        <span><i style="background:#c9d6ea"></i>Klik</span>
+        <span><i style="background:#2f6fd0"></i>Konsultasi</span>
+        <span><i style="background:linear-gradient(180deg,#f0b429,#e09f0e)"></i>Closing</span>
+      </div>
+    </div>
+
+    <!-- Referral link + tier -->
+    <div class="panel">
+      <h3>Link &amp; Kode Referral</h3>
+      <div class="psub">Bagikan link ini — sistem mencatat dengan first-click attribution.</div>
+      <div class="code-display"><span>Kode Referral</span><b id="dashCode">KSA-000000-MPP</b></div>
+      <div class="ref-link">
+        <input type="text" id="dashLink" readonly>
+        <button class="btn btn-navy btn-sm" id="copyBtn">Salin</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" id="waBtn">Share ke WhatsApp</button>
+        <button class="btn btn-outline btn-sm" id="igBtn">Salin Caption IG</button>
+      </div>
+
+      <h3 style="margin-top:26px">Progres Tingkatan</h3>
+      <div class="psub">Tingkatkan closing bulanan untuk naik tingkat</div>
+      <div class="tier-track">
+        <div class="tier-row"><span class="now" id="tierNow">Starter</span><span class="next" id="tierNext">Berikutnya: Active (3 closing/bln)</span></div>
+        <div class="tbar"><div id="tierFill" style="width:0%"></div></div>
+        <div class="tier-note" id="tierNote"></div>
+      </div>
+      <div class="payout"><span>Pencairan komisi berikutnya: <b>tanggal 10 bulan depan</b> via transfer bank / e-wallet (untuk closing bulan sebelumnya yang terverifikasi).</span></div>
+    </div>
+  </div>
+
+  <!-- Riwayat -->
+  <div class="panel" style="margin-bottom:22px">
+    <h3>Riwayat Referral &amp; Komisi</h3>
+    <div class="psub">Seluruh prospek yang tercatat dari kode referralmu. Komisi hanya dihitung dari closing berstatus <b>Terverifikasi</b>.</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tanggal</th><th>Calon Peserta</th><th>Program Bootcamp</th><th>Status</th><th>Nilai</th><th>Komisi (7%)</th></tr></thead>
+        <tbody id="txBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Kit -->
+  <div class="panel">
+    <h3>Kit Marketing</h3>
+    <div class="psub">Materi promosi resmi — diperbarui berkala oleh tim pusat. Gunakan sesuai panduan brand &amp; kode etik.</div>
+    <div class="kit-grid">
+      <div class="kit-card"><b>Template Caption</b><span>IG, TikTok, WA Status</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Unduh</button></div>
+      <div class="kit-card"><b>Poster &amp; Banner</b><span>Multi ukuran</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Unduh</button></div>
+      <div class="kit-card"><b>Video 15–30 detik</b><span>Highlight bootcamp</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Unduh</button></div>
+      <div class="kit-card"><b>Skrip &amp; FAQ</b><span>Jawaban siap pakai</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Unduh</button></div>
+      <div class="kit-card"><b>Brand Guideline</b><span>Logo, warna, font</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Unduh</button></div>
+      <div class="kit-card"><b>Grup Komunitas</b><span>WA / Discord / Telegram</span><button class="btn btn-outline btn-sm" onclick="demoKit(this)">Gabung</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Disalin ke clipboard!</div>
+
+<script>
+/* ============================================================
+   DASHBOARD MITRA — MODE DEMO
+   ------------------------------------------------------------
+   Data performa di halaman ini adalah data contoh (mock).
+   Untuk produksi, hubungkan ke sumber data riil:
+     - Platform afiliasi pihak ketiga (rekomendasi dokumen tahap awal), atau
+     - API backend in-house (lihat README.md bagian "Integrasi Backend").
+   Ganti fungsi loadPartnerData() dengan pemanggilan API Anda.
+   ============================================================ */
+var BASE_URL = location.origin + location.pathname.replace(/[^/]*$/, '');
+var DEMO_CODE = 'KSA-DEMO-MPP';
+var COMMISSION_PER = 458500, PRICE = 6550000;
+
+function rp(n){ return 'Rp' + Math.round(n).toLocaleString('id-ID'); }
+
+/* ===== Login ===== */
+var loginWrap = document.getElementById('loginWrap');
+var dashWrap = document.getElementById('dashWrap');
+
+function getPartners(){
+  try{ return JSON.parse(localStorage.getItem('mpp_partners') || '[]'); }catch(e){ return []; }
+}
+
+function findPartner(code){
+  code = (code || '').trim().toUpperCase();
+  if(code === DEMO_CODE) return { code: DEMO_CODE, name: 'Mitra Demo', email:'demo@kesatriaacademy.id', status:'Mahasiswa Aktif', institusi:'Universitas Contoh', demo:true };
+  var list = getPartners();
+  for(var i=list.length-1;i>=0;i--){
+    if((list[i].ref_code||'').toUpperCase() === code){
+      return { code: list[i].ref_code, name: list[i].nama, email: list[i].email, status: list[i].status, institusi: list[i].institusi };
+    }
+  }
+  return null;
+}
+
+async function doLogin(){
+  var code = (document.getElementById('codeInput').value || '').trim().toUpperCase();
+  var pin = (document.getElementById('pinInput').value || '').trim();
+  var errEl = document.getElementById('loginErr');
+  errEl.classList.remove('show');
+  if(code === DEMO_CODE){ var d = findPartner(code); localStorage.setItem('mpp_session', JSON.stringify(d)); renderDashboard(d); return; }
+  try{
+    var res = await fetch(API_PARTNER + encodeURIComponent(code), { headers: { 'X-Partner-Pin': pin } });
+    var json = await res.json().catch(function(){ return {}; });
+    if(!res.ok || !json.ok){ errEl.textContent = json.error || 'Kode atau PIN salah.'; errEl.classList.add('show'); return; }
+    sessionStorage.setItem('mpp_pin', pin);
+    var pt = json.partner || {};
+    var p = { code: pt.ref_code || code, name: pt.nama || 'Mitra', email: '', status: pt.status || '', institusi: pt.institusi || '' };
+    localStorage.setItem('mpp_session', JSON.stringify(p));
+    renderDashboard(p);
+  }catch(e){ errEl.textContent = 'Tidak dapat terhubung ke server. Coba lagi sebentar.'; errEl.classList.add('show'); }
+}
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('codeInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+
+/* Auto-login dari sesi atau setelah pendaftaran */
+(function(){
+  var session = null;
+  try{ session = JSON.parse(localStorage.getItem('mpp_session') || 'null'); }catch(e){}
+  if(session && (session.code === DEMO_CODE || sessionStorage.getItem('mpp_pin'))) renderDashboard(session);
+  /* jika diarahkan dengan ?code= */
+  var qs = new URLSearchParams(location.search).get('code');
+  if(qs){ document.getElementById('codeInput').value = qs; }
+})();
+
+/* Coba ambil data riil dari API (server/index.js) atau endpoint Supabase.
+   Jika backend tidak tersedia, otomatis fallback ke data contoh (mock)
+   supaya dashboard tetap dapat didemokan. */
+var API_PARTNER = '/api/partner/';   /* + ref_code */
+async function fetchLiveStats(code){
+  try{
+    var res = await fetch(API_PARTNER + encodeURIComponent(code), { headers: { 'X-Partner-Pin': sessionStorage.getItem('mpp_pin') || '' } });
+    if(!res.ok) return null;
+    var json = await res.json();
+    return (json && json.ok && json.stats) ? { stats: json.stats, partner: json.partner, demo: !!json.demo } : null;
+  }catch(e){ return null; }
+}
+
+async function renderDashboard(p){
+  loginWrap.style.display = 'none';
+  dashWrap.classList.add('show');
+  document.getElementById('userChip').classList.add('show');
+  document.getElementById('logoutBtn').classList.add('show');
+  var firstName = (p.name || 'Mitra').split(' ')[0];
+  document.getElementById('userName').textContent = firstName;
+  document.getElementById('userAvatar').textContent = firstName.charAt(0).toUpperCase();
+  document.getElementById('dashName').textContent = firstName;
+  document.getElementById('dashCode').textContent = p.code;
+  document.getElementById('dashLink').value = BASE_URL + 'index.html?ref=' + p.code;
+
+  /* ===== Data performa: live API jika tersedia, fallback mock ===== */
+  var live = await fetchLiveStats(p.code);
+  var d = loadPartnerData(p, live);
+  var srcEl = document.getElementById('dataSource');
+  if(srcEl){
+    srcEl.textContent = live
+      ? 'Data live dari API' + (live.demo ? ' (akun demo)' : '')
+      : 'Data contoh — backend belum terhubung';
+  }
+  animateNumber('stClicks', d.clicks);
+  animateNumber('stKonsul', d.konsultasi);
+  animateNumber('stClosing', d.closing);
+  document.getElementById('stKomisi').textContent = rp(d.komisi);
+
+  /* tier */
+  var tier = d.closing >= 10 ? 2 : d.closing >= 3 ? 1 : 0;
+  if(live && live.partner && live.partner.tier){
+    var tmap = {starter:0, active:1, lead:2};
+    if(tmap[live.partner.tier] !== undefined) tier = tmap[live.partner.tier];
+  }
+  var tierNames = ['Partner Starter','Partner Active','Partner Lead'];
+  document.getElementById('dashTier').textContent = tierNames[tier];
+  document.getElementById('tierNow').textContent = ['Starter','Active','Lead'][tier];
+  if(tier === 0){
+    document.getElementById('tierNext').textContent = 'Active (3 closing/bln)';
+    document.getElementById('tierFill').style.width = (d.closing/3*100) + '%';
+    document.getElementById('tierNote').textContent = 'Butuh ' + (3-d.closing) + ' closing lagi bulan ini untuk naik ke Partner Active dan membuka bonus 5% per batch.';
+  } else if(tier === 1){
+    document.getElementById('tierNext').textContent = 'Lead (10 closing/bln)';
+    document.getElementById('tierFill').style.width = (d.closing/10*100) + '%';
+    document.getElementById('tierNote').textContent = 'Butuh ' + (10-d.closing) + ' closing lagi untuk naik ke Partner Lead: akses campaign eksklusif + mentoring karier.';
+  } else {
+    document.getElementById('tierNext').textContent = 'Tingkat tertinggi';
+    document.getElementById('tierFill').style.width = '100%';
+    document.getElementById('tierNote').textContent = 'Luar biasa! Kamu di tingkat Partner Lead — pertahankan performa untuk tetap menikmati benefit eksklusif.';
+  }
+
+  /* chart */
+  var months = ['Mei','Jun','Jul','Agu','Sep','Okt'];
+  var data = d.history; /* [{klik, konsul, closing}] */
+  var maxKlik = Math.max.apply(null, data.map(function(x){return x.klik}).concat([1]));
+  var chart = document.getElementById('chart');
+  chart.innerHTML = '';
+  data.forEach(function(m, i){
+    var col = document.createElement('div'); col.className = 'bar-col';
+    var stack = document.createElement('div'); stack.className = 'bar-stack';
+    [['klik','click'],['konsul','konsultasi'],['closing','close']].forEach(function(pair){
+      var b = document.createElement('div');
+      b.className = 'bar ' + pair[1];
+      b.style.height = (m[pair[0]]/maxKlik*100) + '%';
+      b.title = months[i] + ': ' + m[pair[0]] + ' ' + pair[0];
+      stack.appendChild(b);
+    });
+    col.appendChild(stack);
+    var lbl = document.createElement('span'); lbl.textContent = months[i];
+    col.appendChild(lbl);
+    chart.appendChild(col);
+  });
+
+  /* table */
+  var tbody = document.getElementById('txBody');
+  tbody.innerHTML = '';
+  if(!d.transactions.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:26px">Belum ada transaksi referral tercatat. Yuk mulai bagikan link referralmu! </td></tr>';
+  }
+  d.transactions.forEach(function(t){
+    var tr = document.createElement('tr');
+    var badge = t.status === 'Terverifikasi' ? 'verified' : t.status === 'Menunggu Verifikasi' ? 'pending' : 'proses';
+    var komisi = t.status === 'Terverifikasi' ? rp(t.nilai * 0.07) : '—';
+    tr.innerHTML = '<td>'+t.tanggal+'</td><td>'+t.nama+'</td><td>'+t.program+'</td>'+
+      '<td><span class="badge '+badge+'">'+t.status+'</span></td>'+
+      '<td>'+(t.nilai?rp(t.nilai):'—')+'</td><td style="font-weight:700;color:'+(t.status==='Terverifikasi'?'var(--green)':'var(--muted)')+'">'+komisi+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+/* ===== Data partner: gabungkan live API + fallback mock ===== */
+function hash(str){ var h=0; for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return h; }
+function loadPartnerData(p, live){
+  var h = hash(p.code);
+
+  /* Mode demo resmi (KSA-DEMO-MPP) atau mitra baru tanpa backend */
+  var demoData;
+  if(p.demo){
+    demoData = {
+      clicks: 342, konsultasi: 58, closing: 7,
+      komisi: 7*COMMISSION_PER + 7*PRICE*0.05,
+      history: [
+        {klik:120, konsul:18, closing:2},{klik:180, konsul:26, closing:3},{klik:150, konsul:22, closing:2},
+        {klik:240, konsul:38, closing:5},{klik:290, konsul:45, closing:6},{klik:342, konsul:58, closing:7}
+      ],
+      transactions: [
+        {tanggal:'02 Okt 2026', nama:'R*** A.', program:'Fullstack Web Dev', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'28 Sep 2026', nama:'D*** P.', program:'Data Science', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'25 Sep 2026', nama:'S*** W.', program:'UI/UX Design', status:'Menunggu Verifikasi', nilai:6550000},
+        {tanggal:'21 Sep 2026', nama:'M*** F.', program:'Fullstack Web Dev', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'18 Sep 2026', nama:'A*** N.', program:'Data Science', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'12 Sep 2026', nama:'K*** Y.', program:'Mobile Dev (Flutter)', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'05 Sep 2026', nama:'R*** T.', program:'Fullstack Web Dev', status:'Konsultasi Berjalan', nilai:0},
+        {tanggal:'01 Sep 2026', nama:'F*** H.', program:'UI/UX Design', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'27 Agu 2026', nama:'L*** S.', program:'Data Science', status:'Terverifikasi', nilai:6550000}
+      ]
+    };
+  } else {
+    /* Mitra baru: performa awal kecil, bervariasi per kode */
+    var clicks = 0, konsul = 0, closing = 0;
+    demoData = {
+      clicks: clicks, konsultasi: konsul, closing: closing,
+      komisi: closing*COMMISSION_PER + (closing>=3 ? closing*PRICE*0.05 : 0),
+      history: [
+        {klik:Math.round(clicks*.2), konsul:Math.round(konsul*.2), closing:0},
+        {klik:Math.round(clicks*.35), konsul:Math.round(konsul*.3), closing:0},
+        {klik:Math.round(clicks*.5), konsul:Math.round(konsul*.45), closing:Math.min(1,closing)},
+        {klik:Math.round(clicks*.65), konsul:Math.round(konsul*.6), closing:Math.min(1,Math.max(0,closing-1))},
+        {klik:Math.round(clicks*.8), konsul:Math.round(konsul*.8), closing:Math.min(1,Math.max(0,closing-2))},
+        {klik:clicks, konsul:konsul, closing:Math.max(0,closing-2)}
+      ],
+      transactions: [
+        {tanggal:'05 Okt 2026', nama:'B*** R.', program:'Fullstack Web Dev', status:'Konsultasi Berjalan', nilai:0},
+        {tanggal:'03 Okt 2026', nama:'N*** A.', program:'Data Science', status:'Menunggu Verifikasi', nilai:6550000},
+        {tanggal:'29 Sep 2026', nama:'T*** D.', program:'UI/UX Design', status:'Terverifikasi', nilai:6550000},
+        {tanggal:'22 Sep 2026', nama:'V*** I.', program:'Fullstack Web Dev', status:'Terverifikasi', nilai:6550000}
+      ].slice(0, 0)
+    };
+  }
+
+  /* Jika API live tersedia & bukan akun demo, pakai angka riil server */
+  if(live && !live.demo && live.stats){
+    var s = live.stats;
+    demoData.clicks = s.clicks || 0;
+    demoData.konsultasi = s.konsultasi || 0;
+    demoData.closing = s.closing || 0;
+    demoData.komisi = s.komisi_bulan_ini || 0;
+    if(demoData.closing === 0){
+      demoData.transactions = [];
+      demoData.history = [
+        {klik:0,konsul:0,closing:0},{klik:0,konsul:0,closing:0},{klik:0,konsul:0,closing:0},
+        {klik:Math.round(demoData.clicks*.2),konsul:0,closing:0},
+        {klik:Math.round(demoData.clicks*.5),konsul:Math.round(demoData.konsultasi*.5),closing:0},
+        {klik:demoData.clicks,konsul:demoData.konsultasi,closing:0}
+      ];
+    }
+  }
+  return demoData;
+}
+
+function animateNumber(id, target){
+  var el = document.getElementById(id), cur = 0, step = Math.max(1, Math.ceil(target/40));
+  var t = setInterval(function(){
+    cur += step;
+    if(cur >= target){ cur = target; clearInterval(t); }
+    el.textContent = cur.toLocaleString('id-ID');
+  }, 22);
+}
+
+/* ===== Share / copy ===== */
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg || 'Disalin ke clipboard!';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function copyText(txt, msg){
+  try{
+    if(navigator.clipboard) navigator.clipboard.writeText(txt);
+    else {
+      var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    showToast(msg);
+  }catch(e){ showToast('Gagal menyalin'); }
+}
+document.getElementById('copyBtn').addEventListener('click', function(){
+  copyText(document.getElementById('dashLink').value, 'Link referral disalin!');
+});
+document.getElementById('waBtn').addEventListener('click', function(){
+  var link = document.getElementById('dashLink').value;
+  var text = encodeURIComponent('Halo! Aku mitra resmi Kesatria Academy. Lagi ada program IT Bootcamp keren buat kamu yang pengin siap kerja di industri digital. Cek info lengkapnya di sini ya: ' + link + ' — pakai kode referralku biar dapat prioritas konsultasi gratis! ');
+  window.open('https://wa.me/?text=' + text, '_blank');
+});
+document.getElementById('igBtn').addEventListener('click', function(){
+  var code = document.getElementById('dashCode').textContent;
+  var caption = 'Pengen karier di dunia IT tapi bingung mulai dari mana? \n\nIT Bootcamp Kesatria Academy bantu kamu siap kerja dengan kurikulum industri, mentor berpengalaman, dan penyaluran karier!\n\nFullstack Web Dev | Data Science | UI/UX | Mobile Dev\nTerbuka untuk semua jurusan\nKonsultasi GRATIS\n\nGunakan kode referral ' + code + ' untuk prioritas konsultasi!\n\n#ITBootcamp #KesatriaAcademy #BootcampIndonesia #KarierIT #Coding #MitraResmi';
+  copyText(caption, 'Caption Instagram disalin!');
+});
+function demoKit(btn){
+  showToast('Kit akan tersedia setelah aktivasi oleh tim MPP');
+}
+
+/* ===== Logout ===== */
+document.getElementById('logoutBtn').addEventListener('click', function(){
+  localStorage.removeItem('mpp_session');
+  location.reload();
+});
+
+/* Tracking klik referral sederhana (?ref=CODE dicatat untuk statistik demo) */
+(function(){
+  var ref = new URLSearchParams(location.search).get('ref');
+  if(ref){
+    var clicks = JSON.parse(localStorage.getItem('mpp_clicks') || '{}');
+    clicks[ref] = (clicks[ref] || 0) + 1;
+    localStorage.setItem('mpp_clicks', JSON.stringify(clicks));
+  }
+})();
+</script>
+</body>
+</html>

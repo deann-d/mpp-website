@@ -1,0 +1,89 @@
+/* Tampilan MPP v2 — override tipis di atas style bawaan tiap halaman.
+   Warna & font diatur dari :root di bawah (ubah di sini saja). */
+:root{--navy:#14295a;--navy2:#14295a;--navy3:#1c3a7a;--primary:#1c3f94;--blue:#1c3f94;
+  --gold:#c28a0e;--gold2:#e2b64a;--gold-soft:rgba(194,138,14,.1);
+  --ink:#1d2733;--muted:#586577;--bg:#f5f7fa;--line:#e2e7ef;--radius:10px;--shadow:none}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* Header putih, logo asli */
+header{background:#fff!important;backdrop-filter:none!important;border-bottom:1px solid var(--line)!important}
+header .brand{color:var(--navy);gap:12px}
+.logo-img{height:34px;width:auto;display:block}
+.brand-sub{font-size:.82rem;font-weight:600;color:var(--muted);padding-left:12px;border-left:1px solid var(--line)}
+.nav-links a{color:var(--ink);font-weight:500}
+.nav-links a:hover{color:var(--primary)}
+.hamburger span{background:var(--navy)}
+.nav-links.open{background:#fff!important;border-top:1px solid var(--line)}
+header .btn-ghost{color:var(--navy);border-color:var(--line)}
+header .btn-ghost:hover{background:#eef2f8}
+.user-chip{color:var(--ink)}
+
+/* Tombol */
+.btn{border-radius:6px;font-weight:600;box-shadow:none!important;transition:background .15s,color .15s}
+.btn:hover{transform:none!important}
+.btn-gold{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-gold:hover{background:var(--navy)}
+.btn-navy{background:var(--navy)}
+.hero .btn-ghost{color:var(--primary);border-color:var(--primary)}
+.hero .btn-ghost:hover{background:#eef2fa}
+
+/* Judul section: rata kiri, tanpa label di atasnya */
+.kicker{display:none}
+h2.sec-title{color:var(--navy);letter-spacing:-.01em}
+.center{text-align:left}
+.center .sec-lead{margin-inline:0}
+
+/* Hero terang */
+.hero{background:#fff!important;color:var(--ink);padding:72px 0 80px;border-bottom:1px solid var(--line)}
+.hero h1{color:var(--navy);letter-spacing:-.02em}
+.hero p.lead{color:var(--muted)}
+.hero-stats{gap:0}
+.hstat{background:none;border:0;border-left:2px solid var(--line);border-radius:0;padding:2px 18px;text-align:left}
+.hstat:first-child{border-left:0;padding-left:0}
+.hstat b{color:var(--navy);font-size:1.1rem}
+.hstat span{color:var(--muted)}
+.hero-card{background:var(--bg);border:1px solid var(--line);backdrop-filter:none;border-radius:10px}
+.hero-card h3{color:var(--navy)}
+.mini-flow li{border-bottom:1px solid var(--line)}
+.mini-flow .n{background:var(--primary);color:#fff}
+.mini-flow b{color:var(--ink)}
+.mini-flow span{color:var(--muted)}
+
+/* Kartu: garis tipis, tanpa bayangan dan efek angkat */
+.card,.tier,.step,.ethics-card,.kit-item,.stat,.panel,.kit-card,.login-card,.form-card,.info-card{box-shadow:none!important;border:1px solid var(--line)}
+.card:hover,.kit-card:hover{transform:none!important}
+.stat::after{display:none}
+.tier.popular{border-color:var(--primary)}
+.tier li::before{content:"";top:.72em;width:7px;height:2px;background:var(--gold)}
+.reveal{opacity:1!important;transform:none!important;transition:none!important}
+
+/* Blok gelap dibuat datar */
+.ethics,.cta-band,.page-hero,.side-card{background:var(--navy)!important;box-shadow:none!important}
+footer{background:#0f1f45!important}
+
+/* Form */
+.f-group input,.f-group select,.f-group textarea{border-radius:6px;border:1px solid #cfd7e3}
+.f-group input:focus,.f-group select:focus,.f-group textarea:focus{border-color:var(--primary);box-shadow:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.form-nav{flex-wrap:wrap}
+.form-error{flex-basis:100%;color:#b42318;background:#fef3f2;border:1px solid #fecdca;border-radius:6px;padding:10px 12px;font-size:.88rem;margin:0 0 10px}
+
+/* Perbaikan kontras & header */
+.brand-sub{white-space:nowrap}
+.nav-links{gap:20px}
+.nav-links a{white-space:nowrap;font-size:.88rem}
+@media (max-width:1180px){.brand-sub{display:none}}
+.cta-band{border-radius:12px}
+.cta-band h2{color:#fff}
+.cta-band p{color:#c6d2e4}
+.cta-band .btn-navy,.cta-band .btn-gold{background:#fff;color:var(--navy);border-color:#fff}
+.ethics-card{border-radius:10px}
+footer .brand{color:#fff}
+
+.hero h1{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;line-height:1.2}
+.nav{gap:24px}
+.step-label{text-transform:none!important;letter-spacing:0!important;color:var(--muted)!important;font-weight:600}
+.logo-img{max-width:170px;object-fit:contain}
+@media (max-width:700px){.hstat,.hstat:first-child{border-left:0;padding:0}.hero-stats{gap:18px}}

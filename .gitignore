@@ -1,0 +1,20 @@
+# Data & runtime
+server/data/
+*.tmp
+*.log
+
+# Dependencies & build
+node_modules/
+dist/
+build/
+
+# Environment / rahasia
+.env
+.env.*
+*.pem
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
