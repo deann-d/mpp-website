@@ -18,6 +18,10 @@ const OFFICIAL_CODES = require('../_data/codes');
 
 const POOL_KEY = 'mpp:pool';
 const SEEDED_KEY = 'mpp:pool:seeded';
+const SEED_CLAIM_KEY = 'mpp:pool:seed-claim';
+const SEED_CLAIM_TTL = 10;
+const SEED_WAIT_MS = 2500;
+const SEED_POLL_MS = 50;
 
 /* ---------- keamanan: PIN, enkripsi rekening, rate limit ---------- */
 const DATA_KEY = process.env.DATA_KEY ? crypto.createHash('sha256').update(process.env.DATA_KEY).digest() : null;
@@ -41,17 +45,46 @@ async function rateLimited(key, max, sec) {
 const TOO_MANY = { status: 429, body: { ok: false, error: 'Terlalu banyak permintaan. Coba lagi beberapa menit lagi.' } };
 
 
+function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+async function releaseSeedClaim(token) {
+  const current = await cmd('GET', SEED_CLAIM_KEY);
+  if (current === token) await cmd('DEL', SEED_CLAIM_KEY);
+}
+
 /* ---------- seeding pool kode resmi (idempoten) ---------- */
 async function ensureSeeded() {
-  const seeded = await cmd('GET', SEEDED_KEY);
-  if (seeded) return false;
-  // RPUSH per batch agar payload tidak terlalu besar
-  const CH = 100;
-  for (let i = 0; i < OFFICIAL_CODES.length; i += CH) {
-    await cmd('RPUSH', POOL_KEY, ...OFFICIAL_CODES.slice(i, i + CH));
+  if (await cmd('GET', SEEDED_KEY)) return false;
+
+  const deadline = Date.now() + SEED_WAIT_MS;
+  while (Date.now() < deadline) {
+    const token = crypto.randomBytes(16).toString('hex');
+    const claimed = await cmd('SET', SEED_CLAIM_KEY, token, 'NX', 'EX', SEED_CLAIM_TTL);
+    if (claimed) {
+      try {
+        if (await cmd('GET', SEEDED_KEY)) return false;
+        const poolLength = Number(await cmd('LLEN', POOL_KEY)) || 0;
+        if (poolLength > 0) {
+          // RPUSH bersifat atomik; alokasi baru menunggu marker, jadi pool terisi berarti marker saja yang tertinggal.
+          await cmd('SET', SEEDED_KEY, new Date().toISOString());
+          return false;
+        }
+        await cmd('RPUSH', POOL_KEY, ...OFFICIAL_CODES);
+        await cmd('SET', SEEDED_KEY, new Date().toISOString());
+        return true;
+      } finally {
+        try { await releaseSeedClaim(token); } catch (_) {}
+      }
+    }
+
+    if (await cmd('GET', SEEDED_KEY)) return false;
+    await wait(SEED_POLL_MS);
   }
-  await cmd('SET', SEEDED_KEY, new Date().toISOString());
-  return true;
+
+  if (await cmd('GET', SEEDED_KEY)) return false;
+  const error = new Error('Pool kode sedang disiapkan. Silakan coba lagi beberapa saat.');
+  error.code = 'POOL_SEED_PENDING';
+  throw error;
 }
 
 function hashProspect(v) {
@@ -77,12 +110,19 @@ async function registerPartner(b, meta) {
     return { status: 400, body: { ok: false, error: 'Semua persetujuan wajib dicentang' } };
   }
 
-  await ensureSeeded();
+  try {
+    await ensureSeeded();
+  } catch (error) {
+    if (error.code === 'POOL_SEED_PENDING') {
+      return { status: 503, body: { ok: false, error: error.message } };
+    }
+    throw error;
+  }
   const email = String(b.email).trim().toLowerCase();
 
   // Klaim email lebih dulu agar hanya satu permintaan paralel yang mendapat kode.
   const emailKey = 'mpp:email:' + email;
-  const claim = await cmd('SET', emailKey, '__CLAIMING__', 'NX');
+  const claim = await cmd('SET', emailKey, '__CLAIMING__', 'NX', 'EX', 120);
   if (!claim) return { status: 409, body: { ok: false, error: 'Email sudah terdaftar sebagai mitra' } };
 
   // alokasi kode resmi FIFO

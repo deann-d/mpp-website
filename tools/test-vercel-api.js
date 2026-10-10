@@ -4,13 +4,14 @@
    Pakai: node tools/test-vercel-api.js   (tidak perlu koneksi internet) */
 const http = require('http');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const API = path.resolve(__dirname, '..', 'api');
 
-const store = { kv:{}, lists:{}, sets:{} };
+const store = { kv:{}, lists:{}, sets:{}, expirations:{} };
 function exec(a){const[c,...x]=a.map(String);switch(c){
  case 'GET':return store.kv[x[0]]!==undefined?store.kv[x[0]]:null;
- case 'SET':if(x.includes('NX')){if(store.kv[x[0]]!==undefined)return null;store.kv[x[0]]=x[1];return 'OK';}store.kv[x[0]]=x[1];return 'OK';
- case 'DEL':{let n=0;for(const k of x){if(store.kv[k]!==undefined){delete store.kv[k];n++;}}return n;}
+ case 'SET':if(x.includes('NX')&&store.kv[x[0]]!==undefined)return null;store.kv[x[0]]=x[1];if(x.includes('EX'))store.expirations[x[0]]=Number(x[x.indexOf('EX')+1]);else delete store.expirations[x[0]];return 'OK';
+ case 'DEL':{let n=0;for(const k of x){if(store.kv[k]!==undefined){delete store.kv[k];delete store.expirations[k];n++;}}return n;}
  case 'EXPIRE':return 1;
  case 'INCR':store.kv[x[0]]=String(parseInt(store.kv[x[0]]||'0',10)+1);return +store.kv[x[0]];
  case 'RPUSH':store.lists[x[0]]=store.lists[x[0]]||[];store.lists[x[0]].push(...x.slice(1));return store.lists[x[0]].length;
@@ -45,7 +46,7 @@ mock.listen(0, async ()=>{
   const health=require(path.join(API,'health')), reg=require(path.join(API,'register')),
         trk=require(path.join(API,'track')), par=require(path.join(API,'partner','[code]')),
         adm=require(path.join(API,'admin','stats'));
-  let pass=0,fail=0;
+  let pass=0,fail=0,registeredCount=0;
   const ck=(n,c,x='')=>{c?(pass++,console.log('  [OK] '+n)):(fail++,console.log('  [GAGAL] '+n+(x?' — '+x:'')));};
   console.log('\n=== INTEGRATION TEST: Vercel serverless handlers ===\n');
 
@@ -56,8 +57,10 @@ mock.listen(0, async ()=>{
     status:'Mahasiswa Aktif',institusi:'UI',sosmed:'Instagram',
     setuju_etika:true,setuju_data:true,setuju_status:true};
   r=await call(reg,{method:'POST',body:payload});
+  if(r.statusCode===201) registeredCount++;
   ck('POST /api/register → 201 + kode resmi pertama KSA-674961-MPP', r.statusCode===201 && r._b.ref_code==='KSA-674961-MPP', JSON.stringify(r._b));
   const code=r._b.ref_code; const pin=r._b.access_pin;
+  ck('klaim email sukses tidak lagi memiliki TTL', store.expirations['mpp:email:budi.test@example.com']===undefined);
   ck('register menyertakan next_steps', Array.isArray(r._b.next_steps) && r._b.next_steps.length===4);
 
   r=await call(reg,{method:'POST',body:payload});
@@ -65,6 +68,7 @@ mock.listen(0, async ()=>{
 
   const poolBeforeWarmup=store.lists['mpp:pool'].length;
   const warmup=await call(reg,{method:'POST',body:{...payload,nama:'Pemanas Pool',email:'pemanas.pool@example.com'}});
+  if(warmup.statusCode===201) registeredCount++;
   ck('pendaftaran pemanas mengisi pool', warmup.statusCode===201 && store.lists['mpp:pool'].length===poolBeforeWarmup-1);
   const parallelEmail='paralel.unik@example.com';
   const poolBeforeParallel=store.lists['mpp:pool'].length;
@@ -73,6 +77,7 @@ mock.listen(0, async ()=>{
   })));
   const parallel201=parallelResults.filter(result=>result.statusCode===201);
   const parallel409=parallelResults.filter(result=>result.statusCode===409);
+  registeredCount+=parallel201.length;
   ck('20 pendaftaran paralel email sama: tepat 1 respons 201 dan 19 respons 409',
     parallel201.length===1 && parallel409.length===19 && parallelResults.every(result=>result.statusCode===201 || result.statusCode===409),
     parallelResults.map(result=>result.statusCode).join(','));
@@ -81,13 +86,15 @@ mock.listen(0, async ()=>{
     'sebelum='+poolBeforeParallel+', sesudah='+store.lists['mpp:pool'].length);
 
   const rollbackEmail='rollback.pool@example.com';
+  const poolBeforeRollback=store.lists['mpp:pool'].slice();
   store.lists['mpp:pool']=[];
   const noCode=await call(reg,{method:'POST',body:{...payload,nama:'Rollback',email:rollbackEmail}});
   ck('pool kosong mengembalikan 503 dan melepas klaim email',
     noCode.statusCode===503 && store.kv['mpp:email:'+rollbackEmail]===undefined,
     JSON.stringify(noCode._b));
-  store.lists['mpp:pool'].push('KSA-ROLLBACK-MPP');
+  store.lists['mpp:pool']=poolBeforeRollback;
   const retry=await call(reg,{method:'POST',body:{...payload,nama:'Rollback Berhasil',email:rollbackEmail}});
+  if(retry.statusCode===201) registeredCount++;
   ck('email dapat didaftarkan setelah klaim rollback', retry.statusCode===201);
   r=await call(reg,{method:'GET'});
   ck('GET /api/register → 405', r.statusCode===405);
@@ -120,11 +127,18 @@ mock.listen(0, async ()=>{
   ck('GET /api/admin/stats tanpa token → 401', r.statusCode===401);
   r=await call(adm,{headers:{authorization:'Bearer rahasia123'}});
   ck('GET /api/admin/stats + token → 200 dan jumlah mitra konsisten',
-     r.statusCode===200 && r._b.total_mitra===parallel201.length+3, JSON.stringify(r._b));
+     r.statusCode===200 && r._b.total_mitra===registeredCount, JSON.stringify(r._b));
+  ck('GET /api/admin/stats kode_tersedia = 200 - total_mitra',
+     r.statusCode===200 && r._b.kode_tersedia===200-r._b.total_mitra, JSON.stringify(r._b));
 
   // CORS preflight
   r=await call(reg,{method:'OPTIONS'});
   ck('OPTIONS /api/register → 204 (CORS preflight)', r.statusCode===204);
+
+  const seedRace=spawnSync(process.execPath,[path.join(__dirname,'test-seed-race.js')],{encoding:'utf8'});
+  if(seedRace.stdout) process.stdout.write(seedRace.stdout);
+  if(seedRace.stderr) process.stderr.write(seedRace.stderr);
+  ck('test race seeding dan pemulihan', seedRace.status===0, seedRace.error?seedRace.error.message:'exit='+seedRace.status);
 
   console.log('\n=== HASIL: '+pass+' lulus, '+fail+' gagal ===\n');
   mock.close(); process.exit(fail?1:0);
