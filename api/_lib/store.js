@@ -13,6 +13,7 @@
 'use strict';
 
 const { cmd, pipeline } = require('./kv');
+const { sanitizeRegister, validateConsents, sanitizeTrack } = require('./validate');
 const crypto = require('crypto');
 const OFFICIAL_CODES = require('../_data/codes');
 
@@ -95,6 +96,9 @@ function hashProspect(v) {
 async function registerPartner(b, meta) {
   if (b.website) return { status: 400, body: { ok: false, error: 'Permintaan ditolak' } };
   if (meta.ip && await rateLimited('mpp:rl:reg:' + meta.ip, 20, 3600)) return TOO_MANY;
+  const sanitized = sanitizeRegister(b);
+  if (!sanitized.ok) return { status: 400, body: { ok: false, error: sanitized.error } };
+  b = sanitized.value;
   const required = ['nama', 'email', 'whatsapp', 'status', 'institusi'];
   for (const k of required) {
     if (!String(b[k] || '').trim()) return { status: 400, body: { ok: false, error: 'Field wajib kosong: ' + k } };
@@ -106,9 +110,8 @@ async function registerPartner(b, meta) {
   if (wa.length < 10 || wa.length > 15) {
     return { status: 400, body: { ok: false, error: 'Nomor WhatsApp tidak valid' } };
   }
-  if (!(b.setuju_etika && b.setuju_data && b.setuju_status)) {
-    return { status: 400, body: { ok: false, error: 'Semua persetujuan wajib dicentang' } };
-  }
+  const consents = validateConsents(b);
+  if (!consents.ok) return { status: 400, body: { ok: false, error: consents.error } };
 
   try {
     await ensureSeeded();
@@ -221,10 +224,10 @@ async function getPartner(codeRaw, pinRaw, meta) {
 
 /* ---------- tracking klik (first-click attribution) ---------- */
 async function trackClick(b, meta) {
-  const code = String(b.ref_code || '').toUpperCase();
-  if (!/^(KSA-\d{6}-MPP|KSA-DEMO-MPP)$/.test(code)) {
-    return { status: 400, body: { ok: false, error: 'Kode referral tidak valid' } };
-  }
+  const sanitized = sanitizeTrack(b);
+  if (!sanitized.ok) return { status: 400, body: { ok: false, error: sanitized.error } };
+  b = sanitized.value;
+  const code = b.ref_code;
   if (meta.ip && await rateLimited('mpp:rl:trk:' + meta.ip, 120, 60)) return TOO_MANY;
   const event = {
     ref_code: code,

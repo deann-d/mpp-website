@@ -5,6 +5,7 @@
 const http = require('http');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { runInputValidationTests } = require('./input-validation-tests');
 const API = path.resolve(__dirname, '..', 'api');
 
 const store = { kv:{}, lists:{}, sets:{}, expirations:{} };
@@ -122,6 +123,28 @@ mock.listen(0, async ()=>{
   ck('register dengan honeypot terisi -> 400', r.statusCode===400);
   r=await call(par,{query:{code:'KSA-999999-MPP'}});
   ck('GET /api/partner tidak dikenal → 401', r.statusCode===401);
+
+  let lastTrackCode='KSA-674961-MPP';
+  registeredCount+=await runInputValidationTests({
+    submitRegister: async body => {
+      const out=await call(reg,{method:'POST',body});
+      return {status:out.statusCode,body:out._b};
+    },
+    submitTrack: async body => {
+      if(typeof body.ref_code==='string') lastTrackCode=body.ref_code.toUpperCase();
+      const out=await call(trk,{method:'POST',body});
+      return {status:out.statusCode,body:out._b};
+    },
+    readPartner: async (refCode,accessPin) => {
+      const out=await call(par,{query:{code:refCode},headers:{'x-partner-pin':accessPin}});
+      return out._b && out._b.partner;
+    },
+    readTrackEvent: async () => {
+      const log=store.lists['mpp:clicklog:'+lastTrackCode]||[];
+      return log.length?JSON.parse(log[0]):null;
+    },
+    check:ck
+  });
 
   r=await call(adm,{headers:{}});
   ck('GET /api/admin/stats tanpa token → 401', r.statusCode===401);

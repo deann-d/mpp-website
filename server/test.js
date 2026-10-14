@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /* Smoke test API MPP — jalankan: node server/test.js (server harus sudah berjalan di :3000) */
 'use strict';
+const fs = require('fs');
+const path = require('path');
 const BASE = process.env.TEST_BASE || 'http://localhost:3000';
+const { runInputValidationTests } = require('../tools/input-validation-tests');
 
 async function req(method, path, body, headers = {}) {
   const res = await fetch(BASE + path, {
@@ -22,6 +25,7 @@ function check(name, cond, extra = '') {
 
 (async () => {
   console.log('\n=== SMOKE TEST API MPP (' + BASE + ') ===\n');
+  const testRunId = Date.now();
 
   // 1. Health
   const h = await req('GET', '/api/health');
@@ -38,7 +42,7 @@ function check(name, cond, extra = '') {
     kota: 'Bandung', status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
     sosmed: 'Instagram, WhatsApp', metode_bayar: 'bank',
     setuju_etika: true, setuju_data: true, setuju_status: true
-  });
+  }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-initial' });
   check('POST /api/register → 201 + kode resmi KSA-…-MPP',
     r.status === 201 && /^KSA-\d{6}-MPP$/.test(r.json.ref_code || ''),
     JSON.stringify(r.json));
@@ -51,7 +55,7 @@ function check(name, cond, extra = '') {
     nama: 'Tester MPP', email, whatsapp: '081234567890',
     status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
     setuju_etika: true, setuju_data: true, setuju_status: true
-  });
+  }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-duplicate' });
   check('POST /api/register duplikat → 409', dup.status === 409);
 
   const statsBeforeWarmup = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
@@ -60,7 +64,7 @@ function check(name, cond, extra = '') {
     nama: 'Pemanas Pool', email: warmupEmail, whatsapp: '081234567890',
     status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
     setuju_etika: true, setuju_data: true, setuju_status: true
-  }, { 'X-Forwarded-For': '192.0.2.10' });
+  }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-warmup' });
   const statsBeforeParallel = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
   check('pendaftaran pemanas server berhasil', warmup.status === 201);
 
@@ -69,7 +73,7 @@ function check(name, cond, extra = '') {
     nama: 'Paralel ' + i, email: parallelEmail, whatsapp: '081234567890',
     status: 'Mahasiswa Aktif', institusi: 'Universitas Tester',
     setuju_etika: true, setuju_data: true, setuju_status: true
-  }, { 'X-Forwarded-For': '198.51.100.' + (i + 1) })));
+  }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-parallel-' + i })));
   const parallel201 = parallelResults.filter(result => result.status === 201);
   const parallel409 = parallelResults.filter(result => result.status === 409);
   const statsAfterParallel = await req('GET', '/api/admin/stats', null, { Authorization: 'Bearer r' });
@@ -87,7 +91,7 @@ function check(name, cond, extra = '') {
     nama: 'X', email: 'x' + Date.now() + '@e.com', whatsapp: '081234567890',
     status: 'Mahasiswa Aktif', institusi: 'U',
     setuju_etika: false, setuju_data: true, setuju_status: true
-  });
+  }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-consent' });
   check('POST /api/register tanpa persetujuan etika → 400', noAgree.status === 400);
 
   // 6. Partner lookup
@@ -102,7 +106,7 @@ function check(name, cond, extra = '') {
 
   const bad = await req('GET', '/api/partner/' + code, null, { 'X-Partner-Pin': 'SALAH123' });
   check('GET /api/partner dengan PIN salah → 401', bad.status === 401);
-  const bot = await req('POST', '/api/register', { nama: 'Bot', email: 'bot' + Date.now() + '@e.com', whatsapp: '081234567890', status: 'Mahasiswa Aktif', institusi: 'U', website: 'http://spam', setuju_etika: true, setuju_data: true, setuju_status: true });
+  const bot = await req('POST', '/api/register', { nama: 'Bot', email: 'bot' + Date.now() + '@e.com', whatsapp: '081234567890', status: 'Mahasiswa Aktif', institusi: 'U', website: 'http://spam', setuju_etika: true, setuju_data: true, setuju_status: true }, { 'X-Forwarded-For': 'server-test-' + testRunId + '-honeypot' });
   check('register dengan honeypot terisi → 400', bot.status === 400);
   const leak = await req('GET', '/server/data/db.json');
   check('db.json tidak bisa diakses publik → 404', leak.status === 404 || leak.json === null);
@@ -120,6 +124,30 @@ function check(name, cond, extra = '') {
     const p2 = await req('GET', '/api/partner/' + code, null, PH);
     check('Statistik klik bertambah', p2.json.stats.clicks >= 1);
   }
+
+  let inputTestRequest = 0;
+  const inputTestRun = Date.now();
+  await runInputValidationTests({
+    submitRegister: async body => {
+      inputTestRequest++;
+      const out = await req('POST', '/api/register', body, { 'X-Forwarded-For': 'input-test-' + inputTestRun + '-' + inputTestRequest });
+      return { status: out.status, body: out.json };
+    },
+    submitTrack: async body => {
+      inputTestRequest++;
+      const out = await req('POST', '/api/track', body, { 'X-Forwarded-For': 'input-track-' + inputTestRun + '-' + inputTestRequest });
+      return { status: out.status, body: out.json };
+    },
+    readPartner: async (refCode, accessPin) => {
+      const out = await req('GET', '/api/partner/' + refCode, null, { 'X-Partner-Pin': accessPin });
+      return out.json && out.json.partner;
+    },
+    readTrackEvent: async () => {
+      const db = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'data', 'db.json'), 'utf8'));
+      return db.clicks[db.clicks.length - 1] || null;
+    },
+    check
+  });
 
   // 8. Admin tanpa token → 401/503
   const a = await req('GET', '/api/admin/stats');

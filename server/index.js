@@ -27,6 +27,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { MAX_BODY_BYTES, isRecord, sanitizeRegister, validateConsents, sanitizeTrack } = require('../api/_lib/validate');
 
 const ROOT = path.resolve(__dirname, '..', 'public');
 const DATA_DIR = path.join(__dirname, 'data');
@@ -106,9 +107,38 @@ function sendJson(res, status, obj) {
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', c => { data += c; if (data.length > 1e6) { reject(new Error('payload too large')); req.destroy(); } });
-    req.on('end', () => { try { resolve(data ? JSON.parse(data) : {}); } catch (e) { reject(new Error('invalid JSON')); } });
-    req.on('error', reject);
+    let bytes = 0;
+    let settled = false;
+    req.on('data', chunk => {
+      if (settled) return;
+      bytes += Buffer.byteLength(chunk);
+      if (bytes > MAX_BODY_BYTES) {
+        settled = true;
+        req.pause();
+        const error = new Error('Ukuran body melebihi batas 65536 byte (64 KiB).');
+        error.status = 413;
+        reject(error);
+        return;
+      }
+      data += chunk.toString();
+    });
+    req.on('end', () => {
+      if (settled) return;
+      settled = true;
+      try {
+        const body = data ? JSON.parse(data) : {};
+        if (!isRecord(body)) {
+          const error = new Error('Body permintaan harus berupa objek JSON.');
+          error.status = 400;
+          reject(error);
+        } else resolve(body);
+      } catch (cause) {
+        const error = new Error('Body permintaan bukan JSON yang valid.');
+        error.status = 400;
+        reject(error);
+      }
+    });
+    req.on('error', error => { if (!settled) reject(error); });
   });
 }
 function clientIp(req) {
@@ -122,18 +152,20 @@ function validWa(w) { const v = String(w || '').replace(/[^0-9]/g, ''); return v
 
 /* ---------------- API: register ---------------- */
 async function handleRegister(req, res) {
-  const b = await readBody(req);
+  const input = await readBody(req);
   if (limited(req, 'register', 20, 3600e3)) return sendJson(res, 429, TOO_MANY);
-  if (b.website) return sendJson(res, 400, { ok: false, error: 'Permintaan ditolak' });
+  if (input.website) return sendJson(res, 400, { ok: false, error: 'Permintaan ditolak' });
+  const sanitized = sanitizeRegister(input);
+  if (!sanitized.ok) return sendJson(res, 400, { ok: false, error: sanitized.error });
+  const b = sanitized.value;
   const required = ['nama', 'email', 'whatsapp', 'status', 'institusi'];
   for (const k of required) {
     if (!String(b[k] || '').trim()) return sendJson(res, 400, { ok: false, error: 'Field wajib kosong: ' + k });
   }
   if (!validEmail(b.email)) return sendJson(res, 400, { ok: false, error: 'Format email tidak valid' });
   if (!validWa(b.whatsapp)) return sendJson(res, 400, { ok: false, error: 'Nomor WhatsApp tidak valid' });
-  if (!(b.setuju_etika && b.setuju_data && b.setuju_status)) {
-    return sendJson(res, 400, { ok: false, error: 'Semua persetujuan wajib dicentang' });
-  }
+  const consents = validateConsents(b);
+  if (!consents.ok) return sendJson(res, 400, { ok: false, error: consents.error });
 
   const db = readDb();
   const email = String(b.email).trim().toLowerCase();
@@ -228,10 +260,12 @@ function handlePartner(req, res, code) {
 
 /* ---------------- API: track click (first-click attribution) ---------------- */
 async function handleTrack(req, res) {
-  const b = await readBody(req);
+  const input = await readBody(req);
   if (limited(req, 'track', 120, 60e3)) return sendJson(res, 429, TOO_MANY);
-  const code = String(b.ref_code || '').toUpperCase();
-  if (!/^KSA-\d{6}-MPP$|^KSA-DEMO-MPP$/.test(code)) return sendJson(res, 400, { ok: false, error: 'Kode referral tidak valid' });
+  const sanitized = sanitizeTrack(input);
+  if (!sanitized.ok) return sendJson(res, 400, { ok: false, error: sanitized.error });
+  const b = sanitized.value;
+  const code = b.ref_code;
 
   const db = readDb();
   const prospectKey = b.prospect ? hashProspect(b.prospect) : null;
@@ -316,6 +350,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end(); }
     return serveStatic(req, res);
   } catch (e) {
+    if (e.status === 413) {
+      sendJson(res, 413, { ok: false, error: e.message });
+      res.once('finish', () => { if (!req.destroyed) req.destroy(); });
+      return;
+    }
+    if (e.status === 400) return sendJson(res, 400, { ok: false, error: e.message });
     return sendJson(res, 500, { ok: false, error: 'Kesalahan server: ' + e.message });
   }
 });
